@@ -11,228 +11,751 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-# ════════════════════════════════════════════════════════════
-#  THEME / CSS — "Lumina Grade" professional dark UI
-# ════════════════════════════════════════════════════════════
-st.markdown("""
+# ══════════════════════════════════════════════════════════
+with st.container(key="lumina-styles"):
+    st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 <style>
     :root {
-        --bg: #131313;
-        --surface: #201f1f;
-        --surface-high: #2a2a2a;
-        --surface-highest: #353534;
-        --surface-low: #1c1b1b;
-        --surface-lowest: #0e0e0e;
-        --primary: #98cbff;
+        --background: #0a0a0a;
+        --surface: #131313;
+        --surface-container: #151515;
+        --surface-container-low: #111111;
+        --surface-container-lowest: #080808;
+        --surface-container-high: #1a1a1a;
+        --surface-container-highest: #353534;
+        --surface-variant: #1c1c1c;
+        --surface-bright: #252525;
+        --primary: #00a3ff;
+        --primary-container: #004a77;
         --secondary: #ffb77f;
+        --outline: #444c56;
+        --outline-variant: #2d333b;
         --on-surface: #e5e2e1;
-        --on-variant: #bec7d4;
-        --outline: #88919d;
-        --outline-variant: #3f4852;
-        --primary-container: #00a3ff;
+        --on-surface-variant: #8b949e;
+        --on-primary: #003354;
     }
 
-    /* ── 전역 ── */
-    .stApp { background: var(--bg); }
+    /* ── Global Styles ── */
+    .stApp {
+        background-color: var(--background) !important;
+        color: var(--on-surface) !important;
+    }
     html, body, [class*="css"] {
-        font-family: 'Pretendard', 'Inter', -apple-system, sans-serif;
+        font-family: 'Inter', -apple-system, sans-serif;
     }
-    /* Material 아이콘 폰트는 절대 덮어쓰지 않음 (아이콘 깨짐 방지) */
+    .mono {
+        font-family: 'JetBrains Mono', monospace !important;
+    }
+    
+    /* Icon family safety */
     [data-testid="stIconMaterial"], .material-symbols-outlined, .material-symbols-rounded {
-        font-family: 'Material Symbols Rounded', 'Material Symbols Outlined' !important;
+        font-family: 'Material Symbols Outlined' !important;
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20 !important;
+        vertical-align: middle;
     }
-    footer, #MainMenu { visibility: hidden; height: 0; }
-    /* 헤더/툴바 전체 숨김 (배포·메뉴 버튼 제거) */
-    header[data-testid="stHeader"] { display: none !important; }
-    [data-testid="stToolbar"], [data-testid="stAppToolbar"] { display: none !important; }
-    /* 사이드바 접기 기능 제거 — 접기 버튼 숨김 + 항상 펼친 상태로 강제 */
-    [data-testid="stSidebarCollapseButton"],
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"] { display: none !important; }
+
+    /* Prevent flashing during updates */
+    [data-stale="true"], .stApp [data-stale="true"], .element-container[data-stale="true"] {
+        opacity: 1 !important;
+    }
+    [data-testid="stImage"], [data-testid="stImage"] img, .element-container, .stMarkdown {
+        transition: none !important;
+    }
+    [data-testid="stStatusWidget"], [data-testid="stStatusWidgetContainer"] {
+        display: none !important;
+    }
+    footer, #MainMenu {
+        visibility: hidden;
+        height: 0;
+    }
+    header[data-testid="stHeader"],
+    .stAppHeader,
+    [data-testid="stAppHeader"] {
+        display: none !important;
+        height: 0px !important;
+    }
+    [data-testid="stToolbar"], [data-testid="stAppToolbar"] {
+        display: none !important;
+    }
+    [data-testid="stSidebarHeader"], [data-testid="stSidebarCollapseButton"], [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
+        display: none !important;
+        height: 0px !important;
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+
+    /* ── Layout Overrides ── */
+    .stApp {
+        background-color: var(--background) !important;
+        color: var(--on-surface) !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+    [data-testid="stAppViewContainer"] {
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: row !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+    [data-testid="stMain"] {
+        position: fixed !important;
+        left: 290px !important;
+        top: 60px !important;
+        right: 0 !important;
+        bottom: 32px !important;
+        width: calc(100% - 290px) !important; /* Uses percentage instead of vw to avoid scrollbar clipping */
+        height: calc(100vh - 92px) !important;
+        overflow-y: auto !important;
+        background-color: var(--background) !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding-top: 0px !important; /* Removes default Streamlit main container top padding to align content flush */
+        padding-bottom: 0px !important;
+    }
+    /* 이미지 확대(전체화면)를 메인 영역 정중앙에 표시 → 사이드바/헤더 가리지 않음 */
+    [data-testid="stFullScreenFrame"]:has(button[aria-label="Close fullscreen"]) {
+        position: fixed !important;
+        left: 290px !important;
+        top: 60px !important;
+        right: 0 !important;
+        bottom: 32px !important;
+        width: calc(100% - 290px) !important;
+        height: calc(100vh - 92px) !important;
+        z-index: 1500 !important;
+        background: rgba(0,0,0,0.94) !important;
+        overflow: hidden !important;
+    }
+    /* 이미지: 영역 정중앙에 절대 배치, 위아래 여백 확보 */
+    [data-testid="stFullScreenFrame"]:has(button[aria-label="Close fullscreen"]) img {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        max-width: 92% !important;
+        max-height: 84% !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        margin: 0 !important;
+    }
+    /* 닫기 버튼 툴바를 헤더 아래(메인 영역 우상단)로 이동 → 헤더에 안 가리고 항상 클릭 가능 */
+    [data-testid="stFullScreenFrame"]:has(button[aria-label="Close fullscreen"]) [data-testid="stElementToolbar"] {
+        position: fixed !important;
+        top: 72px !important;
+        right: 18px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 1000002 !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    button[aria-label="Close fullscreen"] {
+        background: rgba(20,20,20,.92) !important;
+        border: 1px solid var(--outline-variant) !important;
+        border-radius: 8px !important;
+        width: 34px !important; height: 34px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,.7) !important;
+        color: #fff !important;
+    }
     [data-testid="stSidebar"] {
-        min-width: 300px !important; width: 300px !important;
-        transform: translateX(0) !important; visibility: visible !important;
+        position: fixed !important;
+        left: 0 !important;            /* 전체화면 등에서 왼쪽 잘림 방지: 뷰포트 왼쪽에 고정 */
+        top: 60px !important;
+        bottom: 32px !important;
+        height: calc(100vh - 92px) !important;
+        background-color: var(--surface-container-low) !important;
+        border-right: 1px solid var(--outline-variant) !important;
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
+        z-index: 1000 !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+        visibility: visible !important;
         margin-left: 0 !important;
+        overflow-y: auto !important;   /* 내용이 길면 잘리지 않고 스크롤 */
     }
-    [data-testid="stSidebar"][aria-expanded="false"] { transform: translateX(0) !important; }
-    .block-container { padding: 1rem 1.5rem 2rem 1.5rem; max-width: 100%; }
-
-    .mono { font-family: 'JetBrains Mono', 'Pretendard', sans-serif; letter-spacing: 0.05em; }
-
-    /* ── Top bar ── */
-    .lumina-topbar {
-        display: flex; align-items: center; justify-content: space-between;
-        height: 56px; margin: 0 -1.5rem 1rem -1.5rem; padding: 0 1.5rem;
-        background: var(--surface); border-bottom: 1px solid var(--outline-variant);
-        container-type: inline-size; gap: 16px; overflow: hidden;
+    [data-testid="stBlockContainer"],
+    [data-testid="stMainBlockContainer"],
+    .block-container,
+    .stMainBlockContainer {
+        padding-top: 0px !important; /* Starts flush below the top header bar for alignment */
+        padding-bottom: 24px !important;
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-top: 0px !important;
     }
-    .lumina-brand {
-        font-size: 22px; font-weight: 700; color: var(--primary);
-        font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
-        white-space: nowrap; flex-shrink: 0;
+    [data-testid="stSidebar"],
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 0px !important;
+        margin-top: 0px !important;
     }
-    .lumina-subtitle {
-        font-size: 12px; color: var(--outline); white-space: nowrap;
-        overflow: hidden; text-overflow: ellipsis;
+    [data-testid="stSidebarUserContent"],
+    [data-testid="stSidebarContent"],
+    .stSidebarContent {
+        padding-top: 0px !important; /* Starts flush below the top header bar for sidebar content */
+        padding-bottom: 16px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        margin-top: 0px !important;
     }
-    @container (max-width: 520px) { .lumina-subtitle { display: none !important; } }
-
-    /* ── Section header (mono uppercase) ── */
-    .sec-head {
-        display: flex; align-items: center; gap: 8px;
-        font-family: 'JetBrains Mono', 'Pretendard', sans-serif; text-transform: uppercase;
-        letter-spacing: 0.12em; font-size: 11px; font-weight: 500;
-        margin: 4px 0 2px 0;
-    }
-    .sec-head.primary { color: var(--primary); }
-    .sec-head.secondary { color: var(--secondary); }
-    .sec-head.muted { color: var(--outline); }
-
-    /* ── Sidebar = Inspector ── */
-    [data-testid="stSidebar"] {
-        background: var(--surface-low);
-        border-right: 1px solid var(--outline-variant);
-    }
-    [data-testid="stSidebar"] > div { padding-top: 1rem; }
-    .inspector-title {
-        font-size: 18px; font-weight: 600; color: var(--on-surface);
-        padding: 8px 4px 12px 4px; border-bottom: 1px solid var(--outline-variant);
-        margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    /* Hide/remove the styles wrapper container from layout flow so it doesn't create gaps */
+    .st-key-lumina-styles {
+        position: absolute !important;
+        width: 0px !important;
+        height: 0px !important;
+        overflow: hidden !important;
+        margin: 0px !important;
+        padding: 0px !important;
     }
 
-    /* ── Sliders ── */
+    /* Fixed Header and Footer Styling */
+    .lumina-fixed-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 60px !important;
+        background-color: var(--surface-container-low) !important;
+        border-bottom: 1px solid var(--outline-variant) !important;
+        z-index: 9999 !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center;
+        padding: 0 16px !important;
+        box-sizing: border-box !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }
+    .header-left {
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
+    }
+    .header-title {
+        font-weight: 800;
+        color: #98cbff !important;
+        font-size: 26px !important;
+        letter-spacing: -0.02em;
+        line-height: 1.2 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .lumina-fixed-footer {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 32px !important;
+        background-color: var(--surface-container-lowest) !important;
+        border-top: 1px solid var(--outline-variant) !important;
+        z-index: 999999;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 16px;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        font-size: 10px;
+        color: var(--on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .footer-left {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+    .license-tag {
+        color: var(--primary);
+        font-weight: bold;
+    }
+    .footer-right {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+    .status-group {
+        display: flex;
+        gap: 16px;
+    }
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .status-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+    }
+    .status-dot.green {
+        background-color: #22c55e;
+    }
+
+    .lumina-fixed-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 32px;
+        background-color: var(--surface-container-lowest);
+        border-top: 1px solid var(--outline-variant);
+        z-index: 999999;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 16px;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        font-size: 10px;
+        color: var(--on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .footer-left {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+    .license-tag {
+        color: var(--primary);
+        font-weight: bold;
+    }
+    .footer-right {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+    .status-group {
+        display: flex;
+        gap: 16px;
+    }
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .status-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+    }
+    .status-dot.green {
+        background-color: #22c55e;
+    }
+
+    /* ── Sidebar Slider Styling ── */
     [data-testid="stSidebar"] label p {
-        font-family: 'Inter', 'Pretendard', sans-serif !important;
-        font-size: 13px !important; font-weight: 500; color: var(--on-surface) !important;
-        text-transform: none; letter-spacing: 0;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 10px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: var(--on-surface-variant) !important;
     }
+    div[data-baseweb="slider"] > div {
+        background-color: transparent !important;
+    }
+    div[data-baseweb="slider"] [role="presentation"] {
+        background-color: var(--surface-variant) !important;
+        height: 4px !important;
+    }
+    div[data-baseweb="slider"] [role="slider"] {
+        background-color: var(--primary) !important;
+        border: none !important;
+        width: 8px !important;
+        height: 8px !important;
+        border-radius: 2px !important;
+        box-shadow: 0 0 5px rgba(0, 163, 255, 0.4) !important;
+    }
+    div[data-baseweb="slider"] [role="slider"]:hover {
+        background-color: #ffffff !important;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+    }
+
+    /* ── Sidebar Radio Buttons ── */
     [data-testid="stSidebar"] .stRadio label p {
-        font-size: 13px !important; color: var(--on-surface) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 12px !important;
+        color: var(--on-surface) !important;
+        text-transform: none !important;
+        letter-spacing: 0px !important;
     }
-    [data-baseweb="slider"] [role="slider"] { background: var(--primary) !important; }
+    [data-testid="stSidebar"] .stRadio input[type="radio"]:checked + div {
+        border-color: var(--primary) !important;
+        background-color: var(--primary) !important;
+    }
+    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] {
+        gap: 6px !important;
+    }
 
-    /* ── Buttons ── */
-    .stButton button, .stDownloadButton button {
-        font-family: 'Inter', 'Pretendard', sans-serif; font-weight: 600;
-        letter-spacing: 0.01em; border-radius: 6px; border: none; font-size: 14px;
-        transition: opacity .15s, transform .05s;
+    /* ── Buttons (General and Primary) ── */
+    .stSidebar button {
+        background-color: var(--surface-bright) !important;
+        color: var(--primary) !important;
+        border: 1px solid var(--outline-variant) !important;
+        border-radius: 2px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 10px !important;
+        text-transform: uppercase !important;
+        font-weight: bold !important;
+        letter-spacing: 0.05em !important;
+        padding: 6px 12px !important;
+        transition: all 0.2s !important;
     }
-    .stButton button[kind="primary"], .stDownloadButton button {
-        background: var(--primary-container) !important; color: #00375a !important;
-        font-weight: 700;
+    .stSidebar button:hover {
+        background-color: var(--surface-container-highest) !important;
+        border-color: var(--primary) !important;
+        color: #ffffff !important;
     }
-    .stButton button:hover, .stDownloadButton button:hover { opacity: .9; }
-    .stButton button:active { transform: scale(.98); }
 
-    /* ── Cards / panels ── */
-    .panel {
-        background: var(--surface); border: 1px solid var(--outline-variant);
-        border-radius: 6px; padding: 14px 16px;
+    div.stButton button[kind="primary"], div.stDownloadButton button {
+        background-color: var(--primary) !important;
+        color: var(--on-primary) !important;
+        border: 1px solid var(--primary) !important;
+        border-radius: 2px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        font-weight: bold !important;
+        letter-spacing: 0.1em !important;
+        box-shadow: 0 0 10px rgba(0, 163, 255, 0.15) !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s !important;
     }
-    .panel-head {
-        background: var(--surface-high); margin: -14px -16px 14px -16px;
-        padding: 10px 16px; border-bottom: 1px solid var(--outline-variant);
-        border-radius: 6px 6px 0 0; font-weight: 600; font-size: 15px;
+    div.stButton button[kind="primary"]:hover, div.stDownloadButton button:hover {
+        background-color: #ffffff !important;
+        border-color: #ffffff !important;
+        color: var(--on-primary) !important;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* ── File Uploader Styling ── */
+    [data-testid="stFileUploaderDropzone"] {
+        background: var(--surface-container-low) !important;
+        border: 1px dashed var(--outline-variant) !important;
+        border-radius: 2px !important;
+        padding: 24px 16px !important;
+        transition: all 0.2s !important;
+    }
+    [data-testid="stFileUploaderDropzone"]:hover {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 15px rgba(0, 163, 255, 0.15) !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > span::after {
+        content: "여기로 이미지를 끌어다 놓으세요";
         color: var(--on-surface);
+        font-weight: 600;
+        font-family: 'JetBrains Mono', 'Inter', sans-serif;
+        font-size: 12px;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > small::after {
+        content: "JPG · PNG · TIFF · BMP · WEBP / 최대 200MB";
+        color: var(--on-surface-variant);
+        font-family: 'JetBrains Mono', sans-serif;
+        font-size: 10px;
+    }
+    [data-testid="stFileUploaderDropzone"] button {
+        background: var(--surface-bright) !important;
+        border: 1px solid var(--outline-variant) !important;
+        border-radius: 2px !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button [data-testid="stMarkdownContainer"] p::after {
+        content: "파일 선택";
+        color: var(--on-surface);
+        font-family: 'JetBrains Mono', sans-serif;
+        font-size: 11px;
+    }
+    [data-testid="stFileUploaderFile"] {
+        color: var(--on-surface) !important;
+    }
+    [data-testid="stFileUploaderFileName"] {
+        color: var(--on-surface) !important;
+        font-family: 'JetBrains Mono', sans-serif;
     }
 
-    /* ── Metadata strip ── */
+    /* ── Metadata panel cards ── */
     .meta-cell {
-        background: var(--surface); border: 1px solid var(--outline-variant);
-        border-radius: 4px; padding: 10px 12px; height: 72px;
-        display: flex; flex-direction: column; justify-content: space-between;
+        background-color: var(--surface-container-low);
+        border: 1px solid var(--outline-variant);
+        border-radius: 2px;
+        padding: 12px;
+        height: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: 'JetBrains Mono', monospace;
+        box-sizing: border-box;
     }
     .meta-label {
-        font-family: 'Inter', 'Pretendard', sans-serif; font-size: 11px;
-        letter-spacing: 0.02em; color: var(--outline);
+        font-size: 9px;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        opacity: 0.5;
+        letter-spacing: 0.05em;
     }
     .meta-value {
-        font-family: 'JetBrains Mono', 'Pretendard', sans-serif; font-size: 14px;
-        color: var(--on-surface);
+        font-size: 12px;
+        color: var(--primary);
+        font-weight: bold;
     }
 
-    /* ── Color swatches ── */
-    .swatch-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    /* ── Swatches ── */
+    .swatch-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
     .swatch {
-        width: 44px; height: 44px; border-radius: 4px;
+        width: 38px;
+        height: 38px;
+        border-radius: 2px;
         border: 1px solid var(--outline-variant);
     }
 
     /* ── Tags ── */
     .tag {
-        display: inline-block; background: var(--surface-high);
-        padding: 4px 10px; border-radius: 4px; font-size: 12px;
-        font-family: 'Inter', 'Pretendard', sans-serif; color: var(--on-variant);
+        display: inline-block;
+        background-color: var(--surface-variant);
+        border: 1px solid var(--outline-variant);
+        padding: 3px 8px;
+        border-radius: 2px;
+        font-size: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--on-surface);
         margin: 2px;
+        text-transform: uppercase;
     }
-    /* 도움말(Help) 스타일 */
-    .help-h { color: var(--primary); font-weight: 700; font-size: 15px;
-        margin: 14px 0 6px 0; font-family: 'Inter','Pretendard',sans-serif; }
-    .help-p { color: var(--on-variant); font-size: 13.5px; line-height: 1.75;
-        font-family: 'Inter','Pretendard',sans-serif; }
-    .help-p b { color: var(--on-surface); }
-    [data-testid="stExpander"] summary { font-size: 15px !important; font-weight: 600; }
-    [data-testid="stExpander"] { border: 1px solid var(--outline-variant) !important;
-        border-radius: 8px !important; background: var(--surface) !important; }
-    .tag.accent { color: var(--primary); }
+    .tag.accent {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
 
-    /* ── Drag & drop zone ── */
+    /* ── Text Input Styling ── */
+    input[type="text"] {
+        background-color: var(--surface-container-low) !important;
+        border: 1px solid var(--outline-variant) !important;
+        color: #ffffff !important;
+        border-radius: 2px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+    }
+    input[type="text"]:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 5px rgba(0, 163, 255, 0.4) !important;
+    }
+
+    /* ── Expander Styling ── */
+    div[data-testid="stExpander"] {
+        background-color: var(--surface) !important;
+        border: 1px solid var(--outline-variant) !important;
+        border-radius: 2px !important;
+    }
+    div[data-testid="stExpander"] summary {
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 11px !important;
+        color: var(--on-surface) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+
+    .stImage img {
+        border-radius: 2px;
+        border: 1px solid var(--outline-variant);
+    }
+
+    /* ════════ ✨ DESIGN POLISH (이쁘게) — 뒤 규칙이 우선 적용 ════════ */
+
+    /* 섹션 헤더: 앞에 작은 강조 바 + 깔끔한 타이포 */
+    .sec-head {
+        display: flex; align-items: center; gap: 8px;
+        font-family: 'Inter','Pretendard',sans-serif !important;
+        font-size: 12px !important; font-weight: 700;
+        letter-spacing: 0.02em; text-transform: none;
+        margin: 2px 0 10px 0; color: var(--on-surface);
+    }
+    .sec-head::before {
+        content: ""; display: inline-block; width: 3px; height: 14px;
+        border-radius: 3px; background: var(--primary); flex-shrink: 0;
+    }
+    .sec-head.primary { color: #cfe8ff; }
+    .sec-head.primary::before { background: linear-gradient(180deg,#00a3ff,#0061a8); box-shadow:0 0 8px rgba(0,163,255,.5); }
+    .sec-head.secondary { color: #ffd9bd; }
+    .sec-head.secondary::before { background: linear-gradient(180deg,#ffb77f,#d98a4f); box-shadow:0 0 8px rgba(255,183,127,.4); }
+    .sec-head.muted { color: var(--on-surface-variant); }
+    .sec-head.muted::before { background: var(--outline); box-shadow:none; }
+
+    /* 3분할 비교 컬럼이 줌/좁은 화면에서도 세로로 쌓이지 않고 항상 가로 유지 */
+    [data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+    }
+    [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+    [data-testid="stColumn"] {
+        min-width: 0 !important;
+    }
+
+    /* 이미지: 컬럼 너비에 맞추고(가로 줄바꿈 방지) 높이는 화면에 맞게 제한 → 잘림 방지 */
+    [data-testid="stImage"], [data-testid="stImageContainer"] {
+        width: 100% !important;
+        overflow: hidden !important;
+        text-align: center !important;
+    }
+    [data-testid="stImage"] img, .stImage img {
+        width: 100% !important;
+        height: auto !important;
+        max-height: calc(100vh - 260px) !important;
+        object-fit: contain !important;
+        display: block !important;
+        margin: 0 auto !important;
+        border-radius: 10px !important;
+        border: 1px solid var(--outline-variant) !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,.45) !important;
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
+    }
+    .stImage img:hover {
+        transform: translateY(-2px);
+        border-color: rgba(0,163,255,.5) !important;
+        box-shadow: 0 10px 28px rgba(0,0,0,.55), 0 0 18px rgba(0,163,255,.12) !important;
+    }
+
+    /* 업로드 드롭존: 은은한 그라데이션 + 둥근 모서리 + 호버 글로우 */
     [data-testid="stFileUploaderDropzone"] {
-        background: linear-gradient(135deg, #1a2332 0%, var(--surface-low) 100%);
-        border: 2px dashed #3a6ea5 !important; border-radius: 8px !important;
-        padding: 32px 20px !important; transition: all .2s;
+        background: linear-gradient(145deg, #16202c 0%, var(--surface-container-low) 70%) !important;
+        border: 1.5px dashed #355068 !important;
+        border-radius: 12px !important;
+        padding: 28px 18px !important;
     }
     [data-testid="stFileUploaderDropzone"]:hover {
         border-color: var(--primary) !important;
-        box-shadow: 0 0 24px rgba(152,203,255,.18);
+        background: linear-gradient(145deg, #1a2735 0%, #141a22 70%) !important;
+        box-shadow: 0 0 26px rgba(0,163,255,.18) !important;
+        transform: translateY(-1px);
+        transition: all .2s ease;
     }
-    [data-testid="stFileUploaderDropzone"] svg { color: var(--primary); }
-    /* 영어 안내문 → 한글 (인라인 치환: 절대위치 없이 자연 흐름으로 배치해 파일칩과 겹침 방지) */
-    [data-testid="stFileUploaderDropzoneInstructions"] > div > span { font-size: 0 !important; }
-    [data-testid="stFileUploaderDropzoneInstructions"] > div > span::after {
-        content: "여기로 이미지를 끌어다 놓으세요";
-        color: var(--on-surface); font-weight: 600;
-        font-family: 'JetBrains Mono', 'Pretendard', sans-serif; font-size: 13px;
-    }
-    [data-testid="stFileUploaderDropzoneInstructions"] > div > small { font-size: 0 !important; }
-    [data-testid="stFileUploaderDropzoneInstructions"] > div > small::after {
-        content: "JPG · PNG · TIFF · BMP · WEBP / 최대 200MB";
-        color: var(--outline); font-family: 'JetBrains Mono', 'Pretendard', sans-serif; font-size: 11px;
-    }
+    [data-testid="stFileUploaderDropzone"] svg { color: var(--primary) !important; }
+    /* 깨진 'Upload' 라벨 숨기고 한글만 (아이콘은 유지) */
+    [data-testid="stFileUploaderDropzone"] button [data-testid="stMarkdownContainer"] p { font-size: 0 !important; }
     [data-testid="stFileUploaderDropzone"] button {
-        background: var(--surface-highest) !important;
+        border-radius: 8px !important; padding: 7px 16px !important;
+        background: var(--surface-bright) !important; transition: all .15s ease;
+    }
+    [data-testid="stFileUploaderDropzone"] button:hover {
+        border-color: var(--primary) !important; color:#fff !important;
+        box-shadow: 0 0 12px rgba(0,163,255,.25) !important;
+    }
+
+    /* 메타 카드: 그라데이션 + 둥근 모서리 + 왼쪽 강조선 */
+    .meta-cell {
+        background: linear-gradient(145deg, #181d24 0%, #121519 100%) !important;
         border: 1px solid var(--outline-variant) !important;
+        border-left: 2px solid rgba(0,163,255,.5) !important;
+        border-radius: 10px !important; height: 64px !important; padding: 12px 14px !important;
+        transition: border-color .2s ease, box-shadow .2s ease;
     }
-    /* 버튼 라벨 "Upload" → "파일 선택" (아이콘은 유지) */
-    [data-testid="stFileUploaderDropzone"] button [data-testid="stMarkdownContainer"] p {
-        font-size: 0 !important;
-    }
-    [data-testid="stFileUploaderDropzone"] button [data-testid="stMarkdownContainer"] p::after {
-        content: "파일 선택"; color: var(--on-surface);
-        font-family: 'JetBrains Mono', 'Pretendard', sans-serif; font-size: 12px;
-    }
-    /* 업로드된 파일 칩 — 글자/아이콘 정상 표시 */
-    [data-testid="stFileUploaderFile"] { color: var(--on-surface) !important; }
-    [data-testid="stFileUploaderFileName"] {
-        color: var(--on-surface) !important; font-family: 'JetBrains Mono', 'Pretendard', sans-serif;
-    }
+    .meta-cell:hover { border-left-color: var(--primary) !important; box-shadow: 0 0 16px rgba(0,163,255,.1) !important; }
+    .meta-label { font-family:'Inter','Pretendard',sans-serif !important; opacity:.65 !important; font-size:10px !important; }
+    .meta-value { font-family:'JetBrains Mono',monospace !important; font-size:14px !important; color:#eaf5ff !important; }
 
-    h1, h2, h3, h4 { color: var(--on-surface); }
-    .stImage img { border-radius: 4px; border: 1px solid var(--outline-variant); }
+    /* 색상 스와치: 둥글게 + 호버 확대 */
+    .swatch {
+        width: 42px !important; height: 42px !important; border-radius: 9px !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,.4); transition: transform .15s ease;
+    }
+    .swatch:hover { transform: scale(1.12); }
+    .swatch-row { gap: 8px !important; }
+
+    /* 태그: 알약(pill) 모양 */
+    .tag {
+        border-radius: 999px !important; padding: 4px 12px !important;
+        font-family: 'Inter','Pretendard',sans-serif !important; text-transform: none !important;
+        font-size: 11px !important; background: rgba(255,255,255,.04) !important;
+    }
+    .tag.accent { background: rgba(0,163,255,.12) !important; border-color: rgba(0,163,255,.5) !important; }
+
+    /* 버튼: 둥근 모서리 + 그라데이션 */
+    div.stButton button[kind="primary"], div.stDownloadButton button {
+        border-radius: 9px !important;
+        background: linear-gradient(180deg,#0bb0ff,#0072c6) !important;
+        border: none !important; letter-spacing: 0.04em !important;
+        box-shadow: 0 4px 14px rgba(0,163,255,.28) !important;
+    }
+    div.stButton button[kind="primary"]:hover, div.stDownloadButton button:hover {
+        background: linear-gradient(180deg,#33c0ff,#0a86e0) !important; color:#fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0,163,255,.45) !important;
+    }
+    .stSidebar button { border-radius: 8px !important; }
+
+    /* 입력창 / 확장 패널 둥글게 */
+    input[type="text"] { border-radius: 8px !important; }
+    div[data-testid="stExpander"] { border-radius: 12px !important; overflow: hidden; }
+    div[data-testid="stExpander"]:hover { border-color: rgba(0,163,255,.4) !important; }
+    .panel { border-radius: 12px !important; }
 </style>
-""", unsafe_allow_html=True)
 
-# ── Top bar ──
-st.markdown("""
-<div class="lumina-topbar">
-    <span class="lumina-brand">Lumina Grade</span>
-    <span class="lumina-subtitle mono">DaVinci Resolve · .cube LUT Generator</span>
-</div>
-""", unsafe_allow_html=True)
+<!-- Fixed Header Bar -->
+<header class="lumina-fixed-header">
+  <div class="header-left">
+    <span class="material-symbols-outlined" style="font-size: 26px; color: #98cbff; margin-right: 12px; display: flex; align-items: center;">photo_camera</span>
+    <span class="header-title">Lumina Grade</span>
+  </div>
+</header>
 
+<!-- Fixed Footer Bar -->
+<footer class="lumina-fixed-footer">
+  <div class="footer-left">
+    <span>© Lumina 2026</span>
+  </div>
+  <div class="footer-right">
+    <div class="status-group">
+      <span class="status-item"><span class="status-dot green"></span>ENGINE: OK</span>
+      <span class="status-item"><span class="status-dot green"></span>ACES: CONNECTED</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+    const moveElements = () => {
+        const header = document.querySelector('.lumina-fixed-header');
+        const footer = document.querySelector('.lumina-fixed-footer');
+        let headerMoved = false;
+        let footerMoved = false;
+        if (header && header.parentElement !== document.body) {
+            const oldHeader = document.querySelector('body > .lumina-fixed-header');
+            if (oldHeader) oldHeader.remove();
+            document.body.appendChild(header);
+            headerMoved = true;
+        }
+        if (footer && footer.parentElement !== document.body) {
+            const oldFooter = document.querySelector('body > .lumina-fixed-footer');
+            if (oldFooter) oldFooter.remove();
+            document.body.appendChild(footer);
+            footerMoved = true;
+        }
+        return headerMoved && footerMoved;
+    };
+    
+    // Poll to make sure elements are moved as they render
+    let attempts = 0;
+    const interval = setInterval(() => {
+        const done = moveElements();
+        attempts++;
+        if (done || attempts > 50) {
+            clearInterval(interval);
+        }
+    }, 100);
+</script>
+    """, unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════
 #  COLOR SCIENCE
@@ -324,31 +847,35 @@ def analyze_image(img: Image.Image) -> dict:
     }
 
 
-def _transfer(lab, ref_stats, strength, preserve_luminance):
+def _transfer(lab, src_stats, ref_stats, strength, preserve_luminance):
+    """소스 이미지의 실제 색 분포(src)를 레퍼런스(ref) 분포로 맞추는 LAB Reinhard 변환."""
     ref_mean, ref_std = ref_stats["lab_mean"], ref_stats["lab_std"]
-    src_mean = np.array([50.0, 0.0, 0.0])
-    src_std = np.array([25.0, 10.0, 10.0])
+    src_mean, src_std = src_stats["lab_mean"], src_stats["lab_std"]
     out = lab.copy()
+    # L(밝기): 소스→레퍼런스로 매칭하되, 밝기 보존값만큼 원본 밝기 유지
     l_ratio = ref_std[0] / max(src_std[0], 1e-6)
     out[:, 0] = (lab[:, 0] - src_mean[0]) * l_ratio + ref_mean[0]
     out[:, 0] = lab[:, 0] * preserve_luminance + out[:, 0] * (1 - preserve_luminance)
+    # a,b(색): 소스→레퍼런스 색감 매칭
     for ch in [1, 2]:
         ratio = ref_std[ch] / max(src_std[ch], 1e-6)
         out[:, ch] = (lab[:, ch] - src_mean[ch]) * ratio + ref_mean[ch]
     return lab * (1 - strength) + out * strength
 
 
-def generate_cube_lut(ref_stats, lut_size=33, strength=1.0, preserve_luminance=0.5) -> str:
+def generate_cube_lut(src_stats, ref_stats, lut_size=33, strength=1.0, preserve_luminance=0.5) -> str:
     grid = np.linspace(0, 1, lut_size)
-    r, g, b = np.meshgrid(grid, grid, grid, indexing="ij")
-    rgb_grid = np.stack([r, g, b], axis=-1).reshape(-1, 3)
+    # .cube 규격: RED가 가장 빠르게, BLUE가 가장 느리게 변하는 순서로 데이터를 나열해야 한다.
+    # meshgrid를 (b, g, r) 순으로 만들고 C-order로 평탄화하면 R이 가장 빠르게 변한다.
+    b, g, r = np.meshgrid(grid, grid, grid, indexing="ij")
+    rgb_grid = np.stack([r.ravel(), g.ravel(), b.ravel()], axis=-1)
     lab_grid = rgb_to_lab(rgb_grid)
-    blended = _transfer(lab_grid, ref_stats, strength, preserve_luminance)
+    blended = _transfer(lab_grid, src_stats, ref_stats, strength, preserve_luminance)
     output_rgb = np.clip(lab_to_rgb(blended), 0, 1)
     lines = [
-        "# Generated by Lumina Grade — Image Color Transfer LUT",
+        "# Generated by Lumina Grade — Source→Reference Color Match LUT",
         f"# Strength: {strength:.0%}, Luminance Preserve: {preserve_luminance:.0%}",
-        'TITLE "Lumina Color Transfer"',
+        'TITLE "Lumina Color Match"',
         f"LUT_3D_SIZE {lut_size}",
         "DOMAIN_MIN 0.0 0.0 0.0",
         "DOMAIN_MAX 1.0 1.0 1.0",
@@ -360,16 +887,17 @@ def generate_cube_lut(ref_stats, lut_size=33, strength=1.0, preserve_luminance=0
     return "\n".join(lines)
 
 
-def generate_preview(img, ref_stats, strength, preserve_luminance) -> Image.Image:
+def generate_preview(img, src_stats, ref_stats, strength, preserve_luminance, max_side=1600) -> Image.Image:
     img_resized = img.copy()
-    if max(img_resized.size) > 800:
-        ratio = 800 / max(img_resized.size)
+    # 화면 표시용으로 충분히 선명한 해상도까지만 축소 (원본과 나란히 봐도 흐리지 않게)
+    if max(img_resized.size) > max_side:
+        ratio = max_side / max(img_resized.size)
         img_resized = img_resized.resize(
             (int(img_resized.width * ratio), int(img_resized.height * ratio)), Image.LANCZOS)
     pixels = np.array(img_resized.convert("RGB")).astype(np.float64) / 255.0
     shape = pixels.shape
     lab = rgb_to_lab(pixels.reshape(-1, 3))
-    blended = _transfer(lab, ref_stats, strength, preserve_luminance)
+    blended = _transfer(lab, src_stats, ref_stats, strength, preserve_luminance)
     out = (np.clip(lab_to_rgb(blended).reshape(shape), 0, 1) * 255).astype(np.uint8)
     return Image.fromarray(out)
 
@@ -377,26 +905,88 @@ def generate_preview(img, ref_stats, strength, preserve_luminance) -> Image.Imag
 # ════════════════════════════════════════════════════════════
 #  SIDEBAR = INSPECTOR
 # ════════════════════════════════════════════════════════════
+# 설정 기본값 + 초기화
+SETTING_DEFAULTS = {
+    "lut_size": 33,
+    "strength": 0.85,
+    "preserve_luminance": 0.6,
+    "look": "None",
+}
+for _k, _v in SETTING_DEFAULTS.items():
+    st.session_state.setdefault(_k, _v)
+
+
+def reset_settings():
+    for k, v in SETTING_DEFAULTS.items():
+        st.session_state[k] = v
+
+
+def reset_one(key):
+    st.session_state[key] = SETTING_DEFAULTS[key]
+
+
 with st.sidebar:
-    st.markdown('<div class="inspector-title">⚙️ 인스펙터 (Inspector)</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid #2d333b; background: #111111; margin: 0 -8px 0 -8px;">
+        <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: bold; color: #ffffff;">Studio A</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #8b949e; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.05em;">Rec.709 Project</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #2d333b; background: #151515; margin: 0 -8px 16px -8px;">
+        <span class="material-symbols-outlined" style="font-size: 16px; color: #8b949e;">folder</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #e5e2e1; text-transform: uppercase; letter-spacing: 0.05em;">Library</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown('<div class="sec-head primary">◈ 기본 보정 · BASE GRADE</div>', unsafe_allow_html=True)
-    lut_size = st.select_slider(
-        "LUT 해상도 (Resolution)",
-        options=[17, 25, 33, 49, 65], value=33,
-        help="LUT의 격자 정밀도입니다. 높을수록 색 표현이 정밀하지만 파일이 커집니다. 33이 업계 표준입니다.",
-    )
-    strength = st.slider(
-        "색 전이 강도 (Strength)", 0.0, 1.0, 0.85, 0.05,
-        help="레퍼런스 이미지의 색감을 얼마나 강하게 입힐지 결정합니다. 1에 가까울수록 원본 색감을 강하게 따라갑니다.",
-    )
-    preserve_luminance = st.slider(
-        "밝기 보존 (Luminance)", 0.0, 1.0, 0.6, 0.05,
-        help="원본 영상의 밝기(노출)를 얼마나 유지할지 결정합니다. 높을수록 색만 바뀌고 밝기는 원본을 유지합니다.",
-    )
+    st.markdown("""
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span class="sec-head primary" style="margin: 0 !important; font-size: 10px !important;">Exposure Control</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #00a3ff; font-weight: bold; cursor: pointer; letter-spacing: 0.05em;">AUTO</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # LUT 해상도 + 개별 초기화
+    sc1, sc2 = st.columns([5, 1])
+    with sc1:
+        lut_size = st.select_slider(
+            "LUT 해상도 (Resolution)",
+            options=[17, 25, 33, 49, 65], key="lut_size",
+            help="LUT의 격자 정밀도입니다. 높을수록 색 표현이 정밀하지만 파일이 커집니다. 33이 업계 표준입니다.",
+        )
+    with sc2:
+        st.markdown('<div style="height:26px"></div>', unsafe_allow_html=True)
+        st.button("↺", key="rst_lut", on_click=reset_one, args=("lut_size",),
+                  help="LUT 해상도만 초기화", use_container_width=True)
 
-    st.markdown('<div style="height:12px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-head secondary">◈ 크리에이티브 룩 · LOOK</div>', unsafe_allow_html=True)
+    # 색 전이 강도 + 개별 초기화
+    sc1, sc2 = st.columns([5, 1])
+    with sc1:
+        strength = st.slider(
+            "색 전이 강도 (Strength)", 0.0, 1.0, step=0.05, key="strength",
+            help="레퍼런스 이미지의 색감을 얼마나 강하게 입힐지 결정합니다. 1에 가까울수록 원본 색감을 강하게 따라갑니다.",
+        )
+    with sc2:
+        st.markdown('<div style="height:26px"></div>', unsafe_allow_html=True)
+        st.button("↺", key="rst_str", on_click=reset_one, args=("strength",),
+                  help="색 전이 강도만 초기화", use_container_width=True)
+
+    # 밝기 보존 + 개별 초기화
+    sc1, sc2 = st.columns([5, 1])
+    with sc1:
+        preserve_luminance = st.slider(
+            "밝기 보존 (Luminance)", 0.0, 1.0, step=0.05, key="preserve_luminance",
+            help="원본 영상의 밝기(노출)를 얼마나 유지할지 결정합니다. 높을수록 색만 바뀌고 밝기는 원본을 유지합니다.",
+        )
+    with sc2:
+        st.markdown('<div style="height:26px"></div>', unsafe_allow_html=True)
+        st.button("↺", key="rst_lum", on_click=reset_one, args=("preserve_luminance",),
+                  help="밝기 보존만 초기화", use_container_width=True)
+
+    # 수치 조절 바로 아래 — 전체 초기화
+    st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
+    st.button("↺  전체 설정 초기화 (Reset All)", on_click=reset_settings, use_container_width=True)
+
+    st.markdown('<div style="height:18px"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head secondary">Film Emulation (Preset)</div>', unsafe_allow_html=True)
     look = st.radio(
         "Creative Preset",
         ["None", "Teal & Orange", "Noir Silver", "Warm Film"],
@@ -406,21 +996,26 @@ with st.sidebar:
             "Noir Silver": "느와르 실버 (흑백톤)",
             "Warm Film": "웜 필름 (따뜻한 필름)",
         }[x],
+        key="look",
         label_visibility="collapsed",
     )
+    st.button("↺  템플릿 초기화", key="rst_look", on_click=reset_one, args=("look",),
+              use_container_width=True)
 
-    st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
+
+
     st.markdown("""
-    <div class="sec-head muted">◈ 적용 순서 · HOW TO APPLY</div>
-    <div style="font-size:12.5px; color:var(--on-variant); line-height:1.75;
-         font-family:'Inter','Pretendard',sans-serif;">
-    1. 레퍼런스 이미지 업로드<br>
-    2. 설정 조정 → LUT 생성<br>
-    3. .cube 파일 다운로드<br>
-    4. DaVinci Resolve의 Color 페이지 →<br>
-    &nbsp;&nbsp;&nbsp;노드 우클릭 → LUTs → 적용
+    <div style="height:12px"></div>
+    <div class="sec-head muted" style="font-size: 9px !important;">◈ 적용 순서 · HOW TO APPLY</div>
+    <div style="font-size:11px; color:#8b949e; line-height:1.75; font-family:'JetBrains Mono', 'Inter', sans-serif; padding-left: 2px;">
+    1. 레퍼런스 + 소스 2장 업로드<br>
+    2. 설정 조정 → 결과 확인<br>
+    3. LUT 생성 → .cube 다운로드<br>
+    4. 편집 프로그램에 LUT 적용<br>
+    &nbsp;&nbsp;&nbsp;(Resolve · Premiere · AE 등)
     </div>
     """, unsafe_allow_html=True)
+
 
 
 def apply_creative_look(stats, look):
@@ -439,6 +1034,23 @@ def apply_creative_look(stats, look):
     return s
 
 
+# ── 캐싱: 슬라이더 조작 시 재계산/깜박임 방지 ──
+@st.cache_data(show_spinner=False)
+def get_analysis(file_bytes):
+    """파일 내용 기준으로 1회만 분석 (슬라이더와 무관 → 매번 재계산 안 함)."""
+    img = Image.open(io.BytesIO(file_bytes)).convert("RGB")
+    return analyze_image(img)
+
+
+@st.cache_data(show_spinner=False)
+def get_preview(src_bytes, ref_bytes, look, strength, preserve_luminance):
+    """소스 이미지를 (레퍼런스+템플릿) 색감으로 매칭한 결과. 같은 조합은 캐시에서 즉시 반환."""
+    src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
+    src_stats = get_analysis(src_bytes)
+    target_stats = apply_creative_look(get_analysis(ref_bytes), look)
+    return generate_preview(src_img, src_stats, target_stats, strength, preserve_luminance)
+
+
 # ════════════════════════════════════════════════════════════
 #  MAIN
 # ════════════════════════════════════════════════════════════
@@ -448,16 +1060,18 @@ with st.expander("📖  도움말 · 전체 사용 설명서 (Help & Guide)", ex
     st.markdown("""
     <div class="help-p">
     <div class="help-h">🎬 이 프로그램은 무엇인가요?</div>
-    마음에 드는 색감의 <b>레퍼런스 이미지</b>(영화 스틸컷, 사진, 색보정 샘플 등)를 올리면,
-    그 이미지의 색을 분석해서 <b>DaVinci Resolve에서 바로 쓸 수 있는 .cube LUT 파일</b>을 만들어 줍니다.
-    이 LUT을 내 영상에 적용하면 레퍼런스와 비슷한 색감/분위기로 보정됩니다.<br>
+    이미지 <b>2장</b>을 올립니다 — ① <b>레퍼런스</b>(내가 원하는 색감의 이미지)와 ② <b>소스</b>(색을 바꾸고 싶은 내 이미지).
+    그러면 소스 이미지를 분석해 <b>레퍼런스 색감에 최대한 비슷하게</b> 맞춘 뒤,
+    그 색 변환을 <b>업계 표준 .cube LUT 파일</b>로 추출해 줍니다.
+    이 LUT을 영상에 적용하면 같은 색 매칭이 영상 전체에 적용됩니다.<br>
+    <b style="color:var(--primary)">.cube는 표준 포맷이라 DaVinci Resolve뿐 아니라 Premiere Pro · After Effects · Final Cut Pro · Photoshop 등에서 모두 사용할 수 있습니다.</b><br>
     <span style="color:var(--outline)">※ LUT(Look-Up Table): 입력 색을 출력 색으로 바꿔주는 색 변환표. 색보정 프리셋이라고 생각하면 됩니다.</span>
 
     <div class="help-h">🚀 사용 순서 (4단계)</div>
-    <b>1단계 — 이미지 업로드:</b> 원하는 색감의 이미지를 점선 영역에 끌어다 놓거나 '파일 선택'으로 올립니다. (여러 장 올리고 하나를 고를 수도 있어요)<br>
-    <b>2단계 — 설정 조정:</b> 왼쪽 인스펙터에서 강도·밝기·룩을 조절하며 오른쪽 미리보기를 확인합니다.<br>
-    <b>3단계 — LUT 생성/다운로드:</b> 아래 'LUT 생성' 버튼을 누르고 .cube 파일을 받습니다.<br>
-    <b>4단계 — Resolve에 적용:</b> 다운받은 파일을 DaVinci Resolve에 불러옵니다. (아래 '적용 방법' 참고)
+    <b>1단계 — 레퍼런스 업로드:</b> 왼쪽 칸에 '원하는 색감'의 이미지를 올립니다.<br>
+    <b>2단계 — 소스 업로드:</b> 오른쪽 칸에 '색을 바꿀 내 이미지'를 올립니다. (둘 다 올리면 자동으로 매칭)<br>
+    <b>3단계 — 설정 조정:</b> 왼쪽 인스펙터에서 강도·밝기·템플릿을 조절하며 '결과' 미리보기를 확인합니다.<br>
+    <b>4단계 — 추출:</b> 'LUT 생성' → .cube 파일(및 결과 이미지)을 받아 편집 프로그램에 적용합니다.
 
     <div class="help-h">⚙️ 왼쪽 설정(인스펙터) 설명</div>
     <b>· LUT 해상도 (Resolution):</b> 색 변환표의 격자 정밀도. 33이 표준이며 대부분 충분합니다. 49·65는 더 정밀하지만 파일이 커집니다.<br>
@@ -475,12 +1089,18 @@ with st.expander("📖  도움말 · 전체 사용 설명서 (Help & Guide)", ex
     <b>· 색온도/틴트:</b> 따뜻함(Warm)·차가움(Cool), 마젠타·그린 치우침 정도.<br>
     <b>· RGB 히스토그램:</b> 빨강·초록·파랑 각 채널의 밝기 분포 그래프.
 
-    <div class="help-h">🎞️ DaVinci Resolve에 적용하는 3가지 방법</div>
+    <div class="help-h">🎞️ DaVinci Resolve에 적용하는 방법</div>
     <b>A. Color 페이지에서 바로:</b> Color 탭 → 노드에서 우클릭 → <b>LUTs</b> → 다운받은 .cube 선택<br>
     <b>B. 프로젝트 설정:</b> File → Project Settings → Color Management → 3D Lookup Table에서 선택<br>
     <b>C. LUT 폴더에 복사 후 사용:</b> .cube 파일을 아래 폴더에 넣고 Resolve 재시작<br>
     &nbsp;&nbsp;<span style="color:var(--outline)">macOS: /Library/Application Support/Blackmagic Design/DaVinci Resolve/LUT/</span><br>
     &nbsp;&nbsp;<span style="color:var(--outline)">Windows: C:\\ProgramData\\Blackmagic Design\\DaVinci Resolve\\Support\\LUT\\</span>
+
+    <div class="help-h">🅰️ Adobe Premiere Pro에 적용하는 방법</div>
+    <b>1.</b> 클립 선택 → 상단 <b>Lumetri 색상(Lumetri Color)</b> 패널 열기<br>
+    <b>2.</b> <b>기본 교정(Basic Correction)</b> → 입력 LUT → <b>찾아보기(Browse)</b> → .cube 선택<br>
+    &nbsp;&nbsp;또는 <b>크리에이티브(Creative)</b> → Look → 찾아보기 (이쪽은 강도 슬라이더로 세기 조절 가능)<br>
+    <span style="color:var(--outline)">※ After Effects: Lumetri Color 또는 'Apply Color LUT' 이펙트 / Final Cut Pro: Custom LUT 이펙트 / Photoshop: 색상 조회(Color Lookup) 조정 레이어</span>
 
     <div class="help-h">💡 팁</div>
     · 레퍼런스와 내 영상의 노출이 비슷할수록 결과가 자연스럽습니다.<br>
@@ -489,42 +1109,7 @@ with st.expander("📖  도움말 · 전체 사용 설명서 (Help & Guide)", ex
     </div>
     """, unsafe_allow_html=True)
 
-uploaded_files = st.file_uploader(
-    "reference", type=["jpg", "jpeg", "png", "tiff", "bmp", "webp"],
-    accept_multiple_files=True, label_visibility="collapsed",
-)
-
-if uploaded_files:
-    if len(uploaded_files) > 1:
-        names = [f.name for f in uploaded_files]
-        selected = st.radio(
-            f"{len(uploaded_files)}개 업로드됨 — 분석할 이미지 선택",
-            names, horizontal=True,
-        )
-        uploaded = next(f for f in uploaded_files if f.name == selected)
-    else:
-        uploaded = uploaded_files[0]
-
-    img = Image.open(uploaded).convert("RGB")
-
-    with st.spinner("색상 분석 중..."):
-        base_stats = analyze_image(img)
-    stats = apply_creative_look(base_stats, look)
-
-    # ── Preview row: 원본 | LUT 적용 ──
-    pv1, pv2 = st.columns(2)
-    with pv1:
-        st.markdown('<div class="sec-head muted">◈ 원본 · REFERENCE</div>', unsafe_allow_html=True)
-        st.image(img, use_container_width=True)
-    with pv2:
-        st.markdown('<div class="sec-head primary">◈ 보정 미리보기 · GRADED</div>', unsafe_allow_html=True)
-        with st.spinner("미리보기 생성 중..."):
-            preview = generate_preview(img, stats, strength, preserve_luminance)
-        st.image(preview, use_container_width=True)
-
-    # ── Metadata strip ──
-    lab_m = stats["lab_mean"]
-    lum = stats["luminance_stats"]
+def _temp_tint(lab_m):
     if lab_m[2] > 10:
         temp = "Warm 🟡"
     elif lab_m[2] < -10:
@@ -532,14 +1117,68 @@ if uploaded_files:
     else:
         temp = "Neutral ⚪"
     tint = "Magenta" if lab_m[1] > 5 else ("Green" if lab_m[1] < -5 else "Neutral")
+    return temp, tint
 
-    st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
+
+# ── 업로드: ① 레퍼런스(원하는 색감) ② 소스(색 바꿀 내 이미지) ──
+up1, up2 = st.columns(2)
+with up1:
+    st.markdown('<div class="sec-head primary">◈ 1. 레퍼런스 (원하는 색감) · REFERENCE</div>', unsafe_allow_html=True)
+    ref_file = st.file_uploader(
+        "reference", type=["jpg", "jpeg", "png", "tiff", "bmp", "webp"],
+        key="ref_up", label_visibility="collapsed",
+    )
+with up2:
+    st.markdown('<div class="sec-head secondary">◈ 2. 소스 (색 바꿀 내 이미지) · SOURCE</div>', unsafe_allow_html=True)
+    src_file = st.file_uploader(
+        "source", type=["jpg", "jpeg", "png", "tiff", "bmp", "webp"],
+        key="src_up", label_visibility="collapsed",
+    )
+
+if ref_file and src_file:
+    ref_bytes = ref_file.getvalue()
+    src_bytes = src_file.getvalue()
+    ref_img = Image.open(io.BytesIO(ref_bytes)).convert("RGB")
+    src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
+
+    ref_stats = get_analysis(ref_bytes)
+    src_stats = get_analysis(src_bytes)
+    target_stats = apply_creative_look(ref_stats, look)   # 템플릿으로 레퍼런스 목표 변형
+    result = get_preview(src_bytes, ref_bytes, look, strength, preserve_luminance)
+    result_stats = analyze_image(result)
+
+    # ── 3-pane: 레퍼런스 | 소스 원본 | 매칭 결과 ──
+    st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown('<div class="sec-head muted">레퍼런스 (목표)</div>', unsafe_allow_html=True)
+        st.image(ref_img, use_container_width=True)
+    with c2:
+        st.markdown('<div class="sec-head muted">소스 (원본)</div>', unsafe_allow_html=True)
+        st.image(src_img, use_container_width=True)
+    with c3:
+        st.markdown('<div class="sec-head primary">✦ 결과 (색 매칭됨)</div>', unsafe_allow_html=True)
+        st.image(result, use_container_width=True)
+
+    # ── 매칭도 계산: 소스→레퍼런스 색 간극을 얼마나 좁혔는지 (a,b 기준) ──
+    ab_src = src_stats["lab_mean"][1:]
+    ab_ref = target_stats["lab_mean"][1:]
+    ab_res = result_stats["lab_mean"][1:]
+    gap0 = np.linalg.norm(ab_ref - ab_src) + 1e-6
+    gap1 = np.linalg.norm(ab_ref - ab_res)
+    match_pct = float(np.clip((1 - gap1 / gap0) * 100, 0, 100))
+
+    ref_temp, ref_tint = _temp_tint(target_stats["lab_mean"])
+    src_temp, _ = _temp_tint(src_stats["lab_mean"])
+    res_temp, _ = _temp_tint(result_stats["lab_mean"])
+
+    st.markdown('<div style="height:12px"></div>', unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
     meta = [
-        (m1, "색온도 · Temp", temp),
-        (m2, "틴트 · Tint", tint),
-        (m3, "평균 밝기 · Luma", f"{lum['mean']:.2f}"),
-        (m4, "LUT 크기 · Size", f"{lut_size}³ = {lut_size**3:,}"),
+        (m1, "레퍼런스 색온도", ref_temp),
+        (m2, "소스 색온도", src_temp),
+        (m3, "결과 색온도", res_temp),
+        (m4, "색 매칭도 · Match", f"{match_pct:.0f}%"),
     ]
     for col, label, value in meta:
         with col:
@@ -549,50 +1188,35 @@ if uploaded_files:
                 unsafe_allow_html=True,
             )
 
-    # ── Analysis panels ──
+    # ── 분석 패널: 레퍼런스 팔레트 | 레퍼런스 RGB 히스토그램 ──
     st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
     an1, an2 = st.columns([1, 1])
-
     with an1:
-        st.markdown('<div class="sec-head secondary">◈ 주요 색상 · PALETTE</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-head secondary">◈ 레퍼런스 주요 색상 · PALETTE</div>', unsafe_allow_html=True)
         swatches = ""
-        for c in base_stats["dominant_colors"]:
-            hexc = "#{:02x}{:02x}{:02x}".format(
-                int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
+        for c in ref_stats["dominant_colors"]:
+            hexc = "#{:02x}{:02x}{:02x}".format(int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
             swatches += f'<div class="swatch" style="background:{hexc}" title="{hexc}"></div>'
         st.markdown(f'<div class="swatch-row">{swatches}</div>', unsafe_allow_html=True)
 
         st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="sec-head muted">◈ 톤 분포 · TONE</div>', unsafe_allow_html=True)
-        st.markdown(f"""
-        <div style="font-size:13px; color:var(--on-variant); line-height:2;
-             font-family:'Inter','Pretendard',sans-serif;">
-        🌑 섀도우 (Shadows)&nbsp;&nbsp;<b style="color:var(--on-surface)">{lum['shadows_pct']:.1f}%</b><br>
-        🌓 미드톤 (Midtones)&nbsp;&nbsp;<b style="color:var(--on-surface)">{lum['midtones_pct']:.1f}%</b><br>
-        🌕 하이라이트 (Highlights)&nbsp;&nbsp;<b style="color:var(--on-surface)">{lum['highlights_pct']:.1f}%</b>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-        tags = ["Cinematic", f"LUT{lut_size}", temp.split()[0], tint]
+        tags = ["Color Match", f"LUT{lut_size}", ref_temp.split()[0], ref_tint]
         if look != "None":
             tags.append(look)
-        tag_html = "".join(f'<span class="tag">{t}</span>' for t in tags)
+        tag_html = "".join(f'<span class="tag{" accent" if t in ["Color Match", look] else ""}">{t}</span>' for t in tags)
         st.markdown('<div class="sec-head muted">◈ 태그 · TAGS</div>', unsafe_allow_html=True)
         st.markdown(f'<div>{tag_html}</div>', unsafe_allow_html=True)
-
     with an2:
-        st.markdown('<div class="sec-head primary">◈ RGB 히스토그램 · HISTOGRAM</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-head primary">◈ 레퍼런스 RGB 히스토그램</div>', unsafe_allow_html=True)
         for ch, color in zip(["R", "G", "B"], ["#ff6b6b", "#51cf66", "#74c0fc"]):
             st.markdown(
                 f'<div style="font-size:11px; color:var(--outline); font-family:Inter">{ch} 채널 (Channel)</div>',
                 unsafe_allow_html=True)
-            st.bar_chart(base_stats["histograms"][ch], color=color, height=90)
+            st.bar_chart(ref_stats["histograms"][ch], color=color, height=80)
 
-    # ── Generate ──
+    # ── 내보내기 ──
     st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-head primary">◈ 내보내기 · EXPORT LUT</div>', unsafe_allow_html=True)
-
+    st.markdown('<div class="sec-head primary">◈ 내보내기 · EXPORT</div>', unsafe_allow_html=True)
     g1, g2 = st.columns([3, 2])
     with g1:
         filename = st.text_input(
@@ -604,41 +1228,53 @@ if uploaded_files:
 
     if gen:
         with st.spinner(f"{lut_size}³ LUT 생성 중..."):
-            cube = generate_cube_lut(stats, lut_size, strength, preserve_luminance)
-        st.success(f"LUT 생성 완료 — {lut_size}³ = {lut_size**3:,} 포인트")
-        st.download_button(
-            "⬇  .cube 파일 다운로드", data=cube,
-            file_name=f"{filename}.cube", mime="text/plain",
-            use_container_width=True,
-        )
+            cube = generate_cube_lut(src_stats, target_stats, lut_size, strength, preserve_luminance)
+        st.success(f"LUT 생성 완료 — {lut_size}³ = {lut_size**3:,} 포인트 · 색 매칭도 {match_pct:.0f}%")
+        d1, d2 = st.columns(2)
+        with d1:
+            st.download_button(
+                "⬇  .cube LUT 다운로드", data=cube,
+                file_name=f"{filename}.cube", mime="text/plain",
+                use_container_width=True,
+            )
+        with d2:
+            buf = io.BytesIO(); result.save(buf, format="PNG")
+            st.download_button(
+                "🖼  결과 이미지 다운로드", data=buf.getvalue(),
+                file_name=f"{filename}_graded.png", mime="image/png",
+                use_container_width=True,
+            )
         st.markdown("""
         <div class="panel" style="margin-top:14px;">
             <div style="font-size:13px; color:var(--on-variant); line-height:1.85;
                  font-family:'Inter','Pretendard',sans-serif;">
-            <b style="color:var(--primary); font-size:14px;">🎞️ DaVinci Resolve 적용 방법</b><br><br>
-            <b>A. Color 페이지에서:</b> 노드 우클릭 → <b>LUTs</b> → 다운받은 .cube 선택<br>
-            <b>B. 프로젝트 설정:</b> Project Settings → Color Management → 3D Lookup Table<br>
-            <b>C. LUT 폴더에 복사:</b>
-            <span style="color:var(--outline)">/Library/Application Support/Blackmagic Design/DaVinci Resolve/LUT/</span>
-            에 넣고 Resolve 재시작
+            <b style="color:var(--primary); font-size:14px;">🎞️ 적용 방법 (.cube는 여러 프로그램 공용)</b><br><br>
+            <b>DaVinci Resolve:</b> Color 페이지 → 노드 우클릭 → <b>LUTs</b> → 다운받은 .cube 선택<br>
+            <b>Premiere Pro:</b> Lumetri 색상 → 기본 교정/크리에이티브 → 입력 LUT → <b>찾아보기</b> → .cube 선택<br>
+            <b>After Effects:</b> Lumetri Color 또는 'Apply Color LUT' 이펙트<br>
+            <b>Final Cut Pro:</b> Custom LUT 이펙트 &nbsp;·&nbsp; <b>Photoshop:</b> 색상 조회(Color Lookup) 레이어<br>
+            <span style="color:var(--outline)">자세한 단계는 위쪽 📖 도움말 참고</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
+elif ref_file or src_file:
+    st.info("레퍼런스와 소스 이미지를 **둘 다** 올리면 색 매칭이 시작됩니다. " +
+            ("소스 이미지를 올려주세요." if ref_file else "레퍼런스 이미지를 올려주세요."))
+
 else:
     # ── Landing ──
     st.markdown("""
-    <div class="panel" style="text-align:center; padding:48px 24px; margin-top:8px;
-         background:linear-gradient(135deg,#1a2332 0%,var(--surface-low) 100%);">
-        <div style="font-size:40px; margin-bottom:8px;">🎬</div>
-        <div style="color:var(--primary); font-size:16px; font-weight:700; margin-bottom:8px;
-             font-family:'Inter','Pretendard',sans-serif;">
-            이미지 → DaVinci Resolve LUT
+    <div style="text-align: center; padding: 64px 32px; border: 1px solid #2d333b; background: #111111; border-radius: 2px; margin-top: 16px;">
+        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.85;">🎬</div>
+        <div style="color: #00a3ff; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">
+            레퍼런스 + 소스 → 색 매칭 LUT
         </div>
-        <div style="color:var(--on-variant); font-size:14.5px; line-height:1.75;">
-            레퍼런스 이미지의 색감을 분석해 DaVinci Resolve용 <b>.cube LUT</b>을 생성합니다.<br>
-            영화 스틸컷 · 사진 · 컬러 레퍼런스를 위 영역에 끌어다 놓으세요.<br>
-            <span style="color:var(--outline); font-size:13px;">처음이라면 위의 <b>📖 도움말</b>을 먼저 펼쳐보세요.</span>
+        <div style="color: #8b949e; font-size: 13px; line-height: 1.8; max-width: 560px; margin: 0 auto; font-family: 'Inter', sans-serif;">
+            ① <b>레퍼런스</b>(원하는 색감)와 ② <b>소스</b>(색 바꿀 내 이미지)를 올리면,<br>
+            소스를 레퍼런스 색감에 최대한 맞춘 뒤 그 변환을 <b>.cube LUT</b>으로 추출합니다.<br>
+            DaVinci Resolve · Premiere Pro · After Effects · Final Cut · Photoshop 등에서 사용 가능.<br>
+            <span style="color: #444c56; font-size: 11px;">처음이라면 위의 <b>도움말</b>을 먼저 펼쳐보세요.</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
