@@ -1221,23 +1221,24 @@ with up2:
     )
 
 if src_file and (ref_file or look != "None"):
-    src_bytes = src_file.getvalue()
-    src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
-    src_stats = get_analysis(src_bytes)
+    with st.spinner("🎨 이미지 분석 · 색 적용 중..."):
+        src_bytes = src_file.getvalue()
+        src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
+        src_stats = get_analysis(src_bytes)
 
-    preset_only = ref_file is None       # 레퍼런스 없이 프리셋만 적용하는 모드
-    if preset_only:
-        ref_bytes = src_bytes            # 소스 자신을 기준으로 프리셋 적용
-        ref_img = None
-        ref_stats = src_stats
-    else:
-        ref_bytes = ref_file.getvalue()
-        ref_img = Image.open(io.BytesIO(ref_bytes)).convert("RGB")
-        ref_stats = get_analysis(ref_bytes)
+        preset_only = ref_file is None       # 레퍼런스 없이 프리셋만 적용하는 모드
+        if preset_only:
+            ref_bytes = src_bytes            # 소스 자신을 기준으로 프리셋 적용
+            ref_img = None
+            ref_stats = src_stats
+        else:
+            ref_bytes = ref_file.getvalue()
+            ref_img = Image.open(io.BytesIO(ref_bytes)).convert("RGB")
+            ref_stats = get_analysis(ref_bytes)
 
-    target_stats = apply_creative_look(ref_stats, look)
-    result = get_preview(src_bytes, ref_bytes, look, strength, preserve_luminance)
-    result_stats = analyze_image(result)
+        target_stats = apply_creative_look(ref_stats, look)
+        result = get_preview(src_bytes, ref_bytes, look, strength, preserve_luminance)
+        result_stats = analyze_image(result)
 
     src_temp, _ = _temp_tint(src_stats["lab_mean"])
     res_temp, res_tint = _temp_tint(result_stats["lab_mean"])
