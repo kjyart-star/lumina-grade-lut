@@ -696,6 +696,43 @@ with st.container(key="lumina-styles"):
     }
     .stSidebar button { border-radius: 8px !important; }
 
+    /* 프리셋 드롭다운(selectbox) 스타일 */
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+        background: var(--surface-bright) !important;
+        border: 1px solid var(--outline-variant) !important;
+        border-radius: 8px !important;
+        font-family: 'Inter','Pretendard',sans-serif !important;
+        font-size: 13px !important;
+        min-height: 40px !important;
+        cursor: pointer !important;   /* 마우스 올리면 손가락 표시 */
+    }
+    [data-testid="stSelectbox"] div[data-baseweb="select"] * { cursor: pointer !important; }
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
+        border-color: var(--primary) !important;
+    }
+    /* 펼쳐진 옵션 목록 */
+    [data-baseweb="popover"] [role="listbox"] {
+        background: var(--surface-container-high) !important;
+        border: 1px solid var(--outline-variant) !important;
+        border-radius: 8px !important;
+    }
+    [data-baseweb="popover"] [role="option"] {
+        font-family: 'Inter','Pretendard',sans-serif !important;
+        font-size: 13px !important;
+        cursor: pointer !important;
+    }
+    [data-baseweb="popover"] [role="option"]:hover {
+        background: rgba(0,163,255,.15) !important;
+    }
+    /* 클릭 가능한 요소 전반에 손가락 커서 */
+    .stButton button, .stDownloadButton button,
+    [data-testid="stSidebar"] .stRadio label,
+    [data-baseweb="slider"] [role="slider"],
+    [data-testid="stFileUploaderDropzone"] button,
+    button[aria-label="Fullscreen"], button[aria-label="Close fullscreen"] {
+        cursor: pointer !important;
+    }
+
     /* 입력창 / 확장 패널 둥글게 */
     input[type="text"] { border-radius: 8px !important; }
     div[data-testid="stExpander"] { border-radius: 12px !important; overflow: hidden; }
@@ -905,6 +942,20 @@ def generate_preview(img, src_stats, ref_stats, strength, preserve_luminance, ma
 # ════════════════════════════════════════════════════════════
 #  SIDEBAR = INSPECTOR
 # ════════════════════════════════════════════════════════════
+# 프리셋 한글 라벨 (여러 곳에서 재사용)
+LOOK_LABELS = {
+    "None": "없음 (None)",
+    "Teal & Orange": "틸 & 오렌지 (시네마틱)",
+    "Joker": "조커 (그린-옐로우 시네마)",
+    "Warm Film": "웜 필름 (따뜻한 필름)",
+    "Cool Blue": "쿨 블루 (차가운 톤)",
+    "Noir Silver": "느와르 실버 (흑백톤)",
+    "Vintage": "빈티지 (바랜 필름)",
+    "Cyberpunk": "사이버펑크 (네온)",
+    "Sepia": "세피아 (갈색 톤)",
+    "Bleach Bypass": "블리치 바이패스 (고대비)",
+}
+
 # 설정 기본값 + 초기화
 SETTING_DEFAULTS = {
     "lut_size": 33,
@@ -987,15 +1038,11 @@ with st.sidebar:
 
     st.markdown('<div style="height:18px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-head secondary">Film Emulation (Preset)</div>', unsafe_allow_html=True)
-    look = st.radio(
+    look = st.selectbox(
         "Creative Preset",
-        ["None", "Teal & Orange", "Noir Silver", "Warm Film"],
-        format_func=lambda x: {
-            "None": "없음 (None)",
-            "Teal & Orange": "틸 & 오렌지 (시네마틱)",
-            "Noir Silver": "느와르 실버 (흑백톤)",
-            "Warm Film": "웜 필름 (따뜻한 필름)",
-        }[x],
+        ["None", "Teal & Orange", "Joker", "Warm Film", "Cool Blue",
+         "Noir Silver", "Vintage", "Cyberpunk", "Sepia", "Bleach Bypass"],
+        format_func=lambda x: LOOK_LABELS[x],
         key="look",
         label_visibility="collapsed",
     )
@@ -1019,16 +1066,31 @@ with st.sidebar:
 
 
 def apply_creative_look(stats, look):
-    """Adjust target LAB stats based on creative preset."""
+    """Adjust target LAB stats based on creative preset.
+    LAB: mean[0]=밝기, mean[1]=a(녹↔적), mean[2]=b(청↔황), std=채도/대비.
+    """
     s = dict(stats)
     mean = stats["lab_mean"].copy()
     std = stats["lab_std"].copy()
-    if look == "Teal & Orange":
+    if look == "Teal & Orange":          # 시네마틱: 청록 그림자 + 주황 인물
         mean[1] += 4; mean[2] += 6; std[1] *= 1.15; std[2] *= 1.15
-    elif look == "Noir Silver":
-        std[1] *= 0.25; std[2] *= 0.25; mean[1] *= 0.2; mean[2] *= 0.2
-    elif look == "Warm Film":
+    elif look == "Joker":                # 조커: 병약한 그린-옐로우 + 따뜻한 하이라이트
+        mean[1] -= 5; mean[2] += 7; std[0] *= 1.05; std[1] *= 0.9; std[2] *= 1.05
+    elif look == "Warm Film":            # 따뜻한 필름
         mean[2] += 10; mean[1] += 3
+    elif look == "Cool Blue":            # 차가운 시네마톤
+        mean[2] -= 11; mean[1] -= 2; std[2] *= 1.05
+    elif look == "Noir Silver":          # 흑백/모노톤
+        std[1] *= 0.25; std[2] *= 0.25; mean[1] *= 0.2; mean[2] *= 0.2
+    elif look == "Vintage":              # 바랜 레트로 필름
+        mean[2] += 7; mean[1] += 4; std[0] *= 0.95; std[1] *= 0.8; std[2] *= 0.8
+    elif look == "Cyberpunk":            # 네온: 고채도 마젠타+시안
+        mean[1] += 4; mean[2] -= 5; std[0] *= 1.05; std[1] *= 1.35; std[2] *= 1.3
+    elif look == "Sepia":                # 갈색 단색조
+        mean[1] = mean[1] * 0.2 + 8; mean[2] = mean[2] * 0.2 + 20
+        std[1] *= 0.3; std[2] *= 0.35
+    elif look == "Bleach Bypass":        # 탈색 고대비 (채도↓ 대비↑)
+        std[1] *= 0.4; std[2] *= 0.4; mean[1] *= 0.5; mean[2] *= 0.5; std[0] *= 1.2
     s["lab_mean"] = mean
     s["lab_std"] = std
     return s
@@ -1044,11 +1106,21 @@ def get_analysis(file_bytes):
 
 @st.cache_data(show_spinner=False)
 def get_preview(src_bytes, ref_bytes, look, strength, preserve_luminance):
-    """소스 이미지를 (레퍼런스+템플릿) 색감으로 매칭한 결과. 같은 조합은 캐시에서 즉시 반환."""
+    """소스 이미지를 (레퍼런스+템플릿) 색감으로 매칭한 결과(화면용, 최대 1600px). 캐시."""
     src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
     src_stats = get_analysis(src_bytes)
     target_stats = apply_creative_look(get_analysis(ref_bytes), look)
     return generate_preview(src_img, src_stats, target_stats, strength, preserve_luminance)
+
+
+@st.cache_data(show_spinner=False)
+def get_result_fullres(src_bytes, ref_bytes, look, strength, preserve_luminance):
+    """소스 이미지 '원본 해상도 그대로' 룩을 적용한 결과 (다운로드용). 캐시."""
+    src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
+    src_stats = get_analysis(src_bytes)
+    target_stats = apply_creative_look(get_analysis(ref_bytes), look)
+    # max_side를 크게 줘서 축소 없이 원본 해상도로 처리
+    return generate_preview(src_img, src_stats, target_stats, strength, preserve_luminance, max_side=100000)
 
 
 # ════════════════════════════════════════════════════════════
@@ -1060,28 +1132,40 @@ with st.expander("📖  도움말 · 전체 사용 설명서 (Help & Guide)", ex
     st.markdown("""
     <div class="help-p">
     <div class="help-h">🎬 이 프로그램은 무엇인가요?</div>
-    이미지 <b>2장</b>을 올립니다 — ① <b>레퍼런스</b>(내가 원하는 색감의 이미지)와 ② <b>소스</b>(색을 바꾸고 싶은 내 이미지).
-    그러면 소스 이미지를 분석해 <b>레퍼런스 색감에 최대한 비슷하게</b> 맞춘 뒤,
-    그 색 변환을 <b>업계 표준 .cube LUT 파일</b>로 추출해 줍니다.
-    이 LUT을 영상에 적용하면 같은 색 매칭이 영상 전체에 적용됩니다.<br>
+    이미지의 색감을 분석해 <b>업계 표준 .cube LUT</b>과 <b>원본화질 결과 이미지</b>를 만들어 줍니다.
+    두 가지 방식으로 쓸 수 있어요:<br>
+    &nbsp;&nbsp;<b style="color:var(--primary)">① 색 매칭</b> — 레퍼런스(원하는 색감)+소스(내 이미지) 2장을 올리면, 소스를 레퍼런스 색감에 맞춰줍니다.<br>
+    &nbsp;&nbsp;<b style="color:var(--secondary)">② 프리셋만</b> — 소스 1장만 올리고 'Film Emulation' 프리셋(조커·틸&오렌지 등)을 고르면, 레퍼런스 없이 바로 영화 룩을 입힙니다.<br>
     <b style="color:var(--primary)">.cube는 표준 포맷이라 DaVinci Resolve뿐 아니라 Premiere Pro · After Effects · Final Cut Pro · Photoshop 등에서 모두 사용할 수 있습니다.</b><br>
     <span style="color:var(--outline)">※ LUT(Look-Up Table): 입력 색을 출력 색으로 바꿔주는 색 변환표. 색보정 프리셋이라고 생각하면 됩니다.</span>
 
-    <div class="help-h">🚀 사용 순서 (4단계)</div>
-    <b>1단계 — 레퍼런스 업로드:</b> 왼쪽 칸에 '원하는 색감'의 이미지를 올립니다.<br>
-    <b>2단계 — 소스 업로드:</b> 오른쪽 칸에 '색을 바꿀 내 이미지'를 올립니다. (둘 다 올리면 자동으로 매칭)<br>
-    <b>3단계 — 설정 조정:</b> 왼쪽 인스펙터에서 강도·밝기·템플릿을 조절하며 '결과' 미리보기를 확인합니다.<br>
-    <b>4단계 — 추출:</b> 'LUT 생성' → .cube 파일(및 결과 이미지)을 받아 편집 프로그램에 적용합니다.
+    <div class="help-h">🚀 사용 순서</div>
+    <b>방법 A — 색 매칭 (2장):</b><br>
+    &nbsp;&nbsp;1. 왼쪽 칸에 <b>레퍼런스</b>(원하는 색감) 업로드<br>
+    &nbsp;&nbsp;2. 오른쪽 칸에 <b>소스</b>(색 바꿀 내 이미지) 업로드 → 자동 매칭<br>
+    <b>방법 B — 프리셋만 (1장):</b><br>
+    &nbsp;&nbsp;1. <b>소스</b>만 업로드 (이미지가 바로 표시됩니다)<br>
+    &nbsp;&nbsp;2. 왼쪽 <b>Film Emulation 프리셋</b> 선택 → 결과가 나타남<br>
+    <b>공통 — 조정 & 추출:</b> 강도·밝기 슬라이더로 미세 조정 → 아래 <b>'.cube LUT 생성'</b> 또는 <b>'원본화질 이미지 추출'</b>로 다운로드
 
     <div class="help-h">⚙️ 왼쪽 설정(인스펙터) 설명</div>
     <b>· LUT 해상도 (Resolution):</b> 색 변환표의 격자 정밀도. 33이 표준이며 대부분 충분합니다. 49·65는 더 정밀하지만 파일이 커집니다.<br>
-    <b>· 색 전이 강도 (Strength):</b> 레퍼런스 색감을 얼마나 세게 입힐지. 낮추면 은은하게, 높이면 강하게 적용됩니다.<br>
+    <b>· 색 전이 강도 (Strength):</b> 색감을 얼마나 세게 입힐지. 낮추면 은은하게, 높이면 강하게 적용됩니다.<br>
     <b>· 밝기 보존 (Luminance):</b> 원본 영상의 밝기를 얼마나 지킬지. 높이면 밝기는 그대로 두고 색만 바뀝니다.<br>
-    <b>· 크리에이티브 룩 (Look):</b> 분석 색감 위에 추가로 입히는 무드.<br>
-    &nbsp;&nbsp;– <b>없음</b>: 레퍼런스 색감 그대로<br>
-    &nbsp;&nbsp;– <b>틸 & 오렌지</b>: 그림자는 청록, 인물/하이라이트는 주황 — 시네마틱 영화 룩<br>
-    &nbsp;&nbsp;– <b>느와르 실버</b>: 채도를 크게 낮춘 흑백/모노톤 느낌<br>
-    &nbsp;&nbsp;– <b>웜 필름</b>: 전체적으로 따뜻하고 노란빛 도는 필름 감성
+    <b>· 설정 초기화:</b> 각 슬라이더 옆 ↺로 개별 초기화, '전체 설정 초기화'로 한 번에 되돌릴 수 있습니다.
+
+    <div class="help-h">🎞️ Film Emulation 프리셋 (10종)</div>
+    소스(또는 레퍼런스) 색감 위에 추가로 입히는 영화 무드입니다. 레퍼런스 없이 단독으로도 적용됩니다.<br>
+    <b>· 없음</b>: 변형 없음 &nbsp; <b>· 틸 & 오렌지</b>: 청록 그림자 + 주황 인물(시네마틱)<br>
+    <b>· 조커</b>: 병약한 그린-옐로우 + 따뜻한 하이라이트 — 영화 〈조커〉 색감<br>
+    <b>· 웜 필름</b>: 따뜻한 노란 필름 &nbsp; <b>· 쿨 블루</b>: 차가운 파란 톤<br>
+    <b>· 느와르 실버</b>: 흑백/모노톤 &nbsp; <b>· 빈티지</b>: 바랜 레트로 필름<br>
+    <b>· 사이버펑크</b>: 고채도 네온(마젠타+시안) &nbsp; <b>· 세피아</b>: 갈색 단색조<br>
+    <b>· 블리치 바이패스</b>: 탈색 + 강한 대비
+
+    <div class="help-h">💾 내보내기 (2가지)</div>
+    <b>· .cube LUT 생성:</b> 색 변환표 파일. 영상 편집 프로그램에 적용해 영상 전체를 같은 색으로 보정합니다.<br>
+    <b>· 원본화질 이미지 추출:</b> 소스 <b>원본 해상도 그대로</b> 룩을 적용한 PNG를 바로 받습니다. (사진 한 장만 보정할 때 편리)
 
     <div class="help-h">📊 분석 결과 읽는 법</div>
     <b>· 주요 색상 (Palette):</b> 이미지에서 가장 많이 쓰인 대표 색들.<br>
@@ -1103,9 +1187,10 @@ with st.expander("📖  도움말 · 전체 사용 설명서 (Help & Guide)", ex
     <span style="color:var(--outline)">※ After Effects: Lumetri Color 또는 'Apply Color LUT' 이펙트 / Final Cut Pro: Custom LUT 이펙트 / Photoshop: 색상 조회(Color Lookup) 조정 레이어</span>
 
     <div class="help-h">💡 팁</div>
-    · 레퍼런스와 내 영상의 노출이 비슷할수록 결과가 자연스럽습니다.<br>
+    · 색 매칭 시 레퍼런스와 소스의 노출이 비슷할수록 결과가 자연스럽습니다.<br>
     · 색감이 과하면 '색 전이 강도'를 낮춰보세요.<br>
-    · 적용 후 Resolve에서 노드의 Key(불투명도)로 LUT 세기를 미세 조정할 수 있습니다.
+    · 사진 한 장만 빠르게 보정하려면 소스만 올리고 프리셋을 고른 뒤 '원본화질 이미지 추출'을 쓰세요.<br>
+    · 적용 후 Resolve/Premiere에서 노드·클립의 불투명도로 LUT 세기를 미세 조정할 수 있습니다.
     </div>
     """, unsafe_allow_html=True)
 
@@ -1135,51 +1220,76 @@ with up2:
         key="src_up", label_visibility="collapsed",
     )
 
-if ref_file and src_file:
-    ref_bytes = ref_file.getvalue()
+if src_file and (ref_file or look != "None"):
     src_bytes = src_file.getvalue()
-    ref_img = Image.open(io.BytesIO(ref_bytes)).convert("RGB")
     src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
-
-    ref_stats = get_analysis(ref_bytes)
     src_stats = get_analysis(src_bytes)
-    target_stats = apply_creative_look(ref_stats, look)   # 템플릿으로 레퍼런스 목표 변형
+
+    preset_only = ref_file is None       # 레퍼런스 없이 프리셋만 적용하는 모드
+    if preset_only:
+        ref_bytes = src_bytes            # 소스 자신을 기준으로 프리셋 적용
+        ref_img = None
+        ref_stats = src_stats
+    else:
+        ref_bytes = ref_file.getvalue()
+        ref_img = Image.open(io.BytesIO(ref_bytes)).convert("RGB")
+        ref_stats = get_analysis(ref_bytes)
+
+    target_stats = apply_creative_look(ref_stats, look)
     result = get_preview(src_bytes, ref_bytes, look, strength, preserve_luminance)
     result_stats = analyze_image(result)
 
-    # ── 3-pane: 레퍼런스 | 소스 원본 | 매칭 결과 ──
-    st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown('<div class="sec-head muted">레퍼런스 (목표)</div>', unsafe_allow_html=True)
-        st.image(ref_img, use_container_width=True)
-    with c2:
-        st.markdown('<div class="sec-head muted">소스 (원본)</div>', unsafe_allow_html=True)
-        st.image(src_img, use_container_width=True)
-    with c3:
-        st.markdown('<div class="sec-head primary">✦ 결과 (색 매칭됨)</div>', unsafe_allow_html=True)
-        st.image(result, use_container_width=True)
-
-    # ── 매칭도 계산: 소스→레퍼런스 색 간극을 얼마나 좁혔는지 (a,b 기준) ──
-    ab_src = src_stats["lab_mean"][1:]
-    ab_ref = target_stats["lab_mean"][1:]
-    ab_res = result_stats["lab_mean"][1:]
-    gap0 = np.linalg.norm(ab_ref - ab_src) + 1e-6
-    gap1 = np.linalg.norm(ab_ref - ab_res)
-    match_pct = float(np.clip((1 - gap1 / gap0) * 100, 0, 100))
-
-    ref_temp, ref_tint = _temp_tint(target_stats["lab_mean"])
     src_temp, _ = _temp_tint(src_stats["lab_mean"])
-    res_temp, _ = _temp_tint(result_stats["lab_mean"])
+    res_temp, res_tint = _temp_tint(result_stats["lab_mean"])
+    look_label = LOOK_LABELS.get(look, look)
 
+    # ── 미리보기 ──
+    st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
+    if preset_only:
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown('<div class="sec-head muted">소스 (원본)</div>', unsafe_allow_html=True)
+            st.image(src_img, use_container_width=True)
+        with c2:
+            st.markdown('<div class="sec-head primary">✦ 결과 (프리셋 적용)</div>', unsafe_allow_html=True)
+            st.image(result, use_container_width=True)
+    else:
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.markdown('<div class="sec-head muted">레퍼런스 (목표)</div>', unsafe_allow_html=True)
+            st.image(ref_img, use_container_width=True)
+        with c2:
+            st.markdown('<div class="sec-head muted">소스 (원본)</div>', unsafe_allow_html=True)
+            st.image(src_img, use_container_width=True)
+        with c3:
+            st.markdown('<div class="sec-head primary">✦ 결과 (색 매칭됨)</div>', unsafe_allow_html=True)
+            st.image(result, use_container_width=True)
+
+    # ── 메타데이터 ──
     st.markdown('<div style="height:12px"></div>', unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
-    meta = [
-        (m1, "레퍼런스 색온도", ref_temp),
-        (m2, "소스 색온도", src_temp),
-        (m3, "결과 색온도", res_temp),
-        (m4, "색 매칭도 · Match", f"{match_pct:.0f}%"),
-    ]
+    if preset_only:
+        match_pct = None
+        meta = [
+            (m1, "소스 색온도", src_temp),
+            (m2, "결과 색온도", res_temp),
+            (m3, "적용 프리셋", look_label.split(" (")[0]),
+            (m4, "LUT 크기 · Size", f"{lut_size}³ = {lut_size**3:,}"),
+        ]
+    else:
+        ab_src = src_stats["lab_mean"][1:]
+        ab_ref = target_stats["lab_mean"][1:]
+        ab_res = result_stats["lab_mean"][1:]
+        gap0 = np.linalg.norm(ab_ref - ab_src) + 1e-6
+        gap1 = np.linalg.norm(ab_ref - ab_res)
+        match_pct = float(np.clip((1 - gap1 / gap0) * 100, 0, 100))
+        ref_temp, _ = _temp_tint(target_stats["lab_mean"])
+        meta = [
+            (m1, "레퍼런스 색온도", ref_temp),
+            (m2, "소스 색온도", src_temp),
+            (m3, "결과 색온도", res_temp),
+            (m4, "색 매칭도 · Match", f"{match_pct:.0f}%"),
+        ]
     for col, label, value in meta:
         with col:
             st.markdown(
@@ -1188,36 +1298,41 @@ if ref_file and src_file:
                 unsafe_allow_html=True,
             )
 
-    # ── 분석 패널: 레퍼런스 팔레트 | 레퍼런스 RGB 히스토그램 ──
+    # ── 분석 패널: 팔레트 | RGB 히스토그램 (레퍼런스 없으면 소스 기준) ──
+    pal_stats = ref_stats          # preset_only이면 ref_stats == src_stats
+    pal_title = "소스 주요 색상" if preset_only else "레퍼런스 주요 색상"
+    hist_title = "소스 RGB 히스토그램" if preset_only else "레퍼런스 RGB 히스토그램"
     st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
     an1, an2 = st.columns([1, 1])
     with an1:
-        st.markdown('<div class="sec-head secondary">◈ 레퍼런스 주요 색상 · PALETTE</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sec-head secondary">◈ {pal_title} · PALETTE</div>', unsafe_allow_html=True)
         swatches = ""
-        for c in ref_stats["dominant_colors"]:
+        for c in pal_stats["dominant_colors"]:
             hexc = "#{:02x}{:02x}{:02x}".format(int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
             swatches += f'<div class="swatch" style="background:{hexc}" title="{hexc}"></div>'
         st.markdown(f'<div class="swatch-row">{swatches}</div>', unsafe_allow_html=True)
 
         st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-        tags = ["Color Match", f"LUT{lut_size}", ref_temp.split()[0], ref_tint]
+        mode_tag = "Preset" if preset_only else "Color Match"
+        tags = [mode_tag, f"LUT{lut_size}", res_temp.split()[0], res_tint]
         if look != "None":
             tags.append(look)
-        tag_html = "".join(f'<span class="tag{" accent" if t in ["Color Match", look] else ""}">{t}</span>' for t in tags)
+        tag_html = "".join(f'<span class="tag{" accent" if t in [mode_tag, look] else ""}">{t}</span>' for t in tags)
         st.markdown('<div class="sec-head muted">◈ 태그 · TAGS</div>', unsafe_allow_html=True)
         st.markdown(f'<div>{tag_html}</div>', unsafe_allow_html=True)
     with an2:
-        st.markdown('<div class="sec-head primary">◈ 레퍼런스 RGB 히스토그램</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sec-head primary">◈ {hist_title}</div>', unsafe_allow_html=True)
         for ch, color in zip(["R", "G", "B"], ["#ff6b6b", "#51cf66", "#74c0fc"]):
             st.markdown(
                 f'<div style="font-size:11px; color:var(--outline); font-family:Inter">{ch} 채널 (Channel)</div>',
                 unsafe_allow_html=True)
-            st.bar_chart(ref_stats["histograms"][ch], color=color, height=80)
+            st.bar_chart(pal_stats["histograms"][ch], color=color, height=80)
 
     # ── 내보내기 ──
     st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-head primary">◈ 내보내기 · EXPORT</div>', unsafe_allow_html=True)
-    g1, g2 = st.columns([3, 2])
+    src_w, src_h = src_img.size
+    g1, g2, g3 = st.columns([2, 1.5, 1.5])
     with g1:
         filename = st.text_input(
             "File name", value=f"lumina_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
@@ -1225,11 +1340,27 @@ if ref_file and src_file:
         )
     with g2:
         gen = st.button("✦  .cube LUT 생성", type="primary", use_container_width=True)
+    with g3:
+        gen_img = st.button(f"🖼  원본화질 이미지 추출", use_container_width=True,
+                            help=f"소스 원본 해상도({src_w}×{src_h})로 룩을 적용해 PNG로 추출합니다.")
+
+    _sfx = f"· 색 매칭도 {match_pct:.0f}%" if match_pct is not None else f"· 프리셋 {look_label.split(' (')[0]}"
+    if gen_img:
+        with st.spinner(f"원본 해상도({src_w}×{src_h})로 룩 적용 중..."):
+            full_result = get_result_fullres(src_bytes, ref_bytes, look, strength, preserve_luminance)
+            buf_full = io.BytesIO(); full_result.save(buf_full, format="PNG")
+        st.success(f"원본화질 이미지 추출 완료 — {full_result.width}×{full_result.height} {_sfx}")
+        st.download_button(
+            f"⬇  원본화질 결과 이미지 다운로드 ({full_result.width}×{full_result.height} PNG)",
+            data=buf_full.getvalue(),
+            file_name=f"{filename}_graded_{full_result.width}x{full_result.height}.png",
+            mime="image/png", use_container_width=True, type="primary",
+        )
 
     if gen:
         with st.spinner(f"{lut_size}³ LUT 생성 중..."):
             cube = generate_cube_lut(src_stats, target_stats, lut_size, strength, preserve_luminance)
-        st.success(f"LUT 생성 완료 — {lut_size}³ = {lut_size**3:,} 포인트 · 색 매칭도 {match_pct:.0f}%")
+        st.success(f"LUT 생성 완료 — {lut_size}³ = {lut_size**3:,} 포인트 {_sfx}")
         d1, d2 = st.columns(2)
         with d1:
             st.download_button(
@@ -1238,9 +1369,10 @@ if ref_file and src_file:
                 use_container_width=True,
             )
         with d2:
-            buf = io.BytesIO(); result.save(buf, format="PNG")
+            buf_full2 = io.BytesIO()
+            get_result_fullres(src_bytes, ref_bytes, look, strength, preserve_luminance).save(buf_full2, format="PNG")
             st.download_button(
-                "🖼  결과 이미지 다운로드", data=buf.getvalue(),
+                "🖼  원본화질 결과 이미지 다운로드", data=buf_full2.getvalue(),
                 file_name=f"{filename}_graded.png", mime="image/png",
                 use_container_width=True,
             )
@@ -1258,9 +1390,18 @@ if ref_file and src_file:
         </div>
         """, unsafe_allow_html=True)
 
-elif ref_file or src_file:
-    st.info("레퍼런스와 소스 이미지를 **둘 다** 올리면 색 매칭이 시작됩니다. " +
-            ("소스 이미지를 올려주세요." if ref_file else "레퍼런스 이미지를 올려주세요."))
+elif ref_file and not src_file:
+    st.info("레퍼런스만 올렸습니다. **소스 이미지**(색을 바꿀 내 이미지)를 올리면 색 매칭이 시작됩니다.")
+
+elif src_file and look == "None":
+    # 소스만 업로드(레퍼런스·프리셋 없음) — 소스 이미지를 바로 보여주고 안내
+    src_bytes = src_file.getvalue()
+    src_img = Image.open(io.BytesIO(src_bytes)).convert("RGB")
+    st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head primary">소스 이미지 (원본)</div>', unsafe_allow_html=True)
+    st.image(src_img, use_container_width=True)
+    st.info("👉 왼쪽 **Film Emulation 프리셋**(틸&오렌지·조커 등)을 고르거나 **레퍼런스 이미지**를 추가로 올리면, "
+            "색이 적용된 결과가 여기에 표시됩니다.")
 
 else:
     # ── Landing ──
