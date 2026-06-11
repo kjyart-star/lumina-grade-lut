@@ -733,6 +733,25 @@ with st.container(key="lumina-styles"):
         cursor: pointer !important;
     }
 
+    /* 원본화질 이미지 추출 버튼 — 보조 색상(앰버) 그라데이션으로 구분 */
+    .st-key-btn_extract_img button {
+        background: linear-gradient(180deg, #ffc48a, #e89a4f) !important;
+        color: #3a1d00 !important;
+        border: none !important;
+        border-radius: 9px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 14px rgba(255,160,90,.28) !important;
+    }
+    .st-key-btn_extract_img button:hover {
+        background: linear-gradient(180deg, #ffd2a3, #f0a85e) !important;
+        color: #3a1d00 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(255,160,90,.45) !important;
+    }
+    .st-key-btn_extract_img button p, .st-key-btn_extract_img button span {
+        color: #3a1d00 !important;
+    }
+
     /* 입력창 / 확장 패널 둥글게 */
     input[type="text"] { border-radius: 8px !important; }
     div[data-testid="stExpander"] { border-radius: 12px !important; overflow: hidden; }
@@ -1344,9 +1363,11 @@ if src_file and (ref_file or look != "None"):
             label_visibility="collapsed",
         )
     with g2:
-        gen = st.button("✦  .cube LUT 생성", type="primary", use_container_width=True)
+        gen = st.button("LUT 생성", type="primary", use_container_width=True,
+                        icon=":material/auto_fix_high:", key="btn_gen_lut")
     with g3:
-        gen_img = st.button(f"🖼  원본화질 이미지 추출", use_container_width=True,
+        gen_img = st.button("원본화질 이미지 추출", use_container_width=True,
+                            icon=":material/image:", key="btn_extract_img",
                             help=f"소스 원본 해상도({src_w}×{src_h})로 룩을 적용해 PNG로 추출합니다.")
 
     _sfx = f"· 색 매칭도 {match_pct:.0f}%" if match_pct is not None else f"· 프리셋 {look_label.split(' (')[0]}"
@@ -1356,8 +1377,8 @@ if src_file and (ref_file or look != "None"):
             buf_full = io.BytesIO(); full_result.save(buf_full, format="PNG")
         st.success(f"원본화질 이미지 추출 완료 — {full_result.width}×{full_result.height} {_sfx}")
         st.download_button(
-            f"⬇  원본화질 결과 이미지 다운로드 ({full_result.width}×{full_result.height} PNG)",
-            data=buf_full.getvalue(),
+            f"원본화질 결과 이미지 다운로드 ({full_result.width}×{full_result.height} PNG)",
+            data=buf_full.getvalue(), icon=":material/download:",
             file_name=f"{filename}_graded_{full_result.width}x{full_result.height}.png",
             mime="image/png", use_container_width=True, type="primary",
         )
@@ -1369,7 +1390,7 @@ if src_file and (ref_file or look != "None"):
         d1, d2 = st.columns(2)
         with d1:
             st.download_button(
-                "⬇  .cube LUT 다운로드", data=cube,
+                ".cube LUT 다운로드", data=cube, icon=":material/download:",
                 file_name=f"{filename}.cube", mime="text/plain",
                 use_container_width=True,
             )
@@ -1377,7 +1398,8 @@ if src_file and (ref_file or look != "None"):
             buf_full2 = io.BytesIO()
             get_result_fullres(src_bytes, ref_bytes, look, strength, preserve_luminance).save(buf_full2, format="PNG")
             st.download_button(
-                "🖼  원본화질 결과 이미지 다운로드", data=buf_full2.getvalue(),
+                "원본화질 결과 이미지 다운로드", data=buf_full2.getvalue(),
+                icon=":material/image:",
                 file_name=f"{filename}_graded.png", mime="image/png",
                 use_container_width=True,
             )
