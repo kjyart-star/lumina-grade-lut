@@ -1305,13 +1305,22 @@ if src_file and (ref_file or look != "None"):
     hist_title = "소스 RGB 히스토그램" if preset_only else "레퍼런스 RGB 히스토그램"
     st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
     an1, an2 = st.columns([1, 1])
-    with an1:
-        st.markdown(f'<div class="sec-head secondary">◈ {pal_title} · PALETTE</div>', unsafe_allow_html=True)
-        swatches = ""
-        for c in pal_stats["dominant_colors"]:
+    def _swatch_html(stats_obj):
+        html = ""
+        for c in stats_obj["dominant_colors"]:
             hexc = "#{:02x}{:02x}{:02x}".format(int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
-            swatches += f'<div class="swatch" style="background:{hexc}" title="{hexc}"></div>'
-        st.markdown(f'<div class="swatch-row">{swatches}</div>', unsafe_allow_html=True)
+            html += f'<div class="swatch" style="background:{hexc}" title="{hexc}"></div>'
+        return f'<div class="swatch-row">{html}</div>'
+
+    with an1:
+        # 원본(소스/레퍼런스) 팔레트
+        st.markdown(f'<div class="sec-head secondary">◈ {pal_title} · PALETTE</div>', unsafe_allow_html=True)
+        st.markdown(_swatch_html(pal_stats), unsafe_allow_html=True)
+
+        # 결과 팔레트
+        st.markdown('<div style="height:12px"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-head primary">◈ 결과 주요 색상 · RESULT PALETTE</div>', unsafe_allow_html=True)
+        st.markdown(_swatch_html(result_stats), unsafe_allow_html=True)
 
         st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
         mode_tag = "Preset" if preset_only else "Color Match"
