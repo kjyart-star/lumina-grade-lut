@@ -1244,27 +1244,38 @@ if src_file and (ref_file or look != "None"):
     res_temp, res_tint = _temp_tint(result_stats["lab_mean"])
     look_label = LOOK_LABELS.get(look, look)
 
-    # ── 미리보기 ──
+    # ── 색상 팔레트 헬퍼 ──
+    def _swatch_html(stats_obj):
+        html = ""
+        for c in stats_obj["dominant_colors"]:
+            hexc = "#{:02x}{:02x}{:02x}".format(int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
+            html += f'<div class="swatch" style="background:{hexc}" title="{hexc}"></div>'
+        return f'<div class="swatch-row">{html}</div>'
+
+    def _pane(title, title_cls, img, pal_stats_obj, pal_label):
+        st.markdown(f'<div class="sec-head {title_cls}">{title}</div>', unsafe_allow_html=True)
+        st.image(img, use_container_width=True)
+        st.markdown(
+            f'<div class="sec-head {title_cls}" style="font-size:10px; margin-top:8px;">{pal_label}</div>',
+            unsafe_allow_html=True)
+        st.markdown(_swatch_html(pal_stats_obj), unsafe_allow_html=True)
+
+    # ── 미리보기 (각 이미지 아래에 주요 색상 팔레트) ──
     st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
     if preset_only:
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown('<div class="sec-head muted">소스 (원본)</div>', unsafe_allow_html=True)
-            st.image(src_img, use_container_width=True)
+            _pane("소스 (원본)", "muted", src_img, src_stats, "소스 주요 색상")
         with c2:
-            st.markdown('<div class="sec-head primary">✦ 결과 (프리셋 적용)</div>', unsafe_allow_html=True)
-            st.image(result, use_container_width=True)
+            _pane("✦ 결과 (프리셋 적용)", "primary", result, result_stats, "결과 주요 색상")
     else:
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.markdown('<div class="sec-head muted">레퍼런스 (목표)</div>', unsafe_allow_html=True)
-            st.image(ref_img, use_container_width=True)
+            _pane("레퍼런스 (목표)", "muted", ref_img, ref_stats, "레퍼런스 주요 색상")
         with c2:
-            st.markdown('<div class="sec-head muted">소스 (원본)</div>', unsafe_allow_html=True)
-            st.image(src_img, use_container_width=True)
+            _pane("소스 (원본)", "muted", src_img, src_stats, "소스 주요 색상")
         with c3:
-            st.markdown('<div class="sec-head primary">✦ 결과 (색 매칭됨)</div>', unsafe_allow_html=True)
-            st.image(result, use_container_width=True)
+            _pane("✦ 결과 (색 매칭됨)", "primary", result, result_stats, "결과 주요 색상")
 
     # ── 메타데이터 ──
     st.markdown('<div style="height:12px"></div>', unsafe_allow_html=True)
@@ -1299,50 +1310,34 @@ if src_file and (ref_file or look != "None"):
                 unsafe_allow_html=True,
             )
 
-    # ── 분석 패널: 팔레트 | RGB 히스토그램 (레퍼런스 없으면 소스 기준) ──
+    # ── 태그 ──
     pal_stats = ref_stats          # preset_only이면 ref_stats == src_stats
-    pal_title = "소스 주요 색상" if preset_only else "레퍼런스 주요 색상"
     hist_title = "소스 RGB 히스토그램" if preset_only else "레퍼런스 RGB 히스토그램"
     st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-    an1, an2 = st.columns([1, 1])
-    def _swatch_html(stats_obj):
-        html = ""
-        for c in stats_obj["dominant_colors"]:
-            hexc = "#{:02x}{:02x}{:02x}".format(int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
-            html += f'<div class="swatch" style="background:{hexc}" title="{hexc}"></div>'
-        return f'<div class="swatch-row">{html}</div>'
+    mode_tag = "Preset" if preset_only else "Color Match"
+    tags = [mode_tag, f"LUT{lut_size}", res_temp.split()[0], res_tint]
+    if look != "None":
+        tags.append(look)
+    tag_html = "".join(f'<span class="tag{" accent" if t in [mode_tag, look] else ""}">{t}</span>' for t in tags)
+    st.markdown('<div class="sec-head muted">◈ 태그 · TAGS</div>', unsafe_allow_html=True)
+    st.markdown(f'<div>{tag_html}</div>', unsafe_allow_html=True)
 
-    with an1:
-        # 원본(소스/레퍼런스) 팔레트
-        st.markdown(f'<div class="sec-head secondary">◈ {pal_title} · PALETTE</div>', unsafe_allow_html=True)
-        st.markdown(_swatch_html(pal_stats), unsafe_allow_html=True)
-
-        # 결과 팔레트
-        st.markdown('<div style="height:12px"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="sec-head primary">◈ 결과 주요 색상 · RESULT PALETTE</div>', unsafe_allow_html=True)
-        st.markdown(_swatch_html(result_stats), unsafe_allow_html=True)
-
-        st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-        mode_tag = "Preset" if preset_only else "Color Match"
-        tags = [mode_tag, f"LUT{lut_size}", res_temp.split()[0], res_tint]
-        if look != "None":
-            tags.append(look)
-        tag_html = "".join(f'<span class="tag{" accent" if t in [mode_tag, look] else ""}">{t}</span>' for t in tags)
-        st.markdown('<div class="sec-head muted">◈ 태그 · TAGS</div>', unsafe_allow_html=True)
-        st.markdown(f'<div>{tag_html}</div>', unsafe_allow_html=True)
-    with an2:
-        st.markdown(f'<div class="sec-head primary">◈ {hist_title}</div>', unsafe_allow_html=True)
-        for ch, color in zip(["R", "G", "B"], ["#ff6b6b", "#51cf66", "#74c0fc"]):
+    # ── RGB 히스토그램 (가로 3개 R | G | B) ──
+    st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="sec-head primary">◈ {hist_title}</div>', unsafe_allow_html=True)
+    h1, h2, h3 = st.columns(3)
+    for col, ch, color in zip([h1, h2, h3], ["R", "G", "B"], ["#ff6b6b", "#51cf66", "#74c0fc"]):
+        with col:
             st.markdown(
                 f'<div style="font-size:11px; color:var(--outline); font-family:Inter">{ch} 채널 (Channel)</div>',
                 unsafe_allow_html=True)
-            st.bar_chart(pal_stats["histograms"][ch], color=color, height=80)
+            st.bar_chart(pal_stats["histograms"][ch], color=color, height=150)
 
     # ── 내보내기 ──
     st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-head primary">◈ 내보내기 · EXPORT</div>', unsafe_allow_html=True)
     src_w, src_h = src_img.size
-    g1, g2, g3 = st.columns([2, 1.5, 1.5])
+    g1, g2, g3 = st.columns(3)
     with g1:
         filename = st.text_input(
             "File name", value=f"lumina_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
